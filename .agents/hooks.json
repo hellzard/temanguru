@@ -1,0 +1,17 @@
+{
+  "workspace-verification-reminder": {
+    "enabled": false,
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/verify-agent-workspace.mjs --quick",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

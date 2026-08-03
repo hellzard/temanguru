@@ -1,0 +1,24 @@
+# Dependencies and build
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# Secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.pem
+*.key
+
+# Vercel/local tools
+.vercel/
+.agent-artifacts/
+.antigravity-cache/
+
+# OS/editor
+.DS_Store
+Thumbs.db

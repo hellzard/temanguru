@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Laporan keamanan privat
+    url: https://github.com/OWNER/REPO/security/advisories/new
+    about: Jangan publikasikan data murid atau detail kerentanan sensitif di issue publik.

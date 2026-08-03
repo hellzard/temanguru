@@ -1,0 +1,28 @@
+name: Usulan fitur
+description: Jelaskan pekerjaan guru yang ingin dipermudah.
+title: "[Fitur]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: job
+    attributes:
+      label: Pekerjaan guru saat ini
+      description: Apa yang berulang, lambat, atau rawan salah?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Hasil yang diinginkan
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Cara yang digunakan sekarang
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privasi
+      options:
+        - label: Usulan ini tidak memerlukan data murid baru yang sensitif.

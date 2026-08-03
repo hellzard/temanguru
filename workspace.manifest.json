@@ -1,0 +1,13 @@
+{
+  "name": "Teman Guru Antigravity Autopilot Workspace",
+  "version": "4.0.0",
+  "generatedAt": "2026-08-04",
+  "containsSourceCode": true,
+  "targetRepository": "hellzard/temanguru",
+  "targetVercelProject": "temanguru",
+  "entrypoint": "START_HERE.md",
+  "firstPrompt": "prompts/00-AUTOPILOT-FIRST-MESSAGE.md",
+  "firstWorkflow": "/autopilot-setup",
+  "starterFeatureComplete": false,
+  "manualTerminalSetupRequired": false
+}

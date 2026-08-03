@@ -1,0 +1,32 @@
+{
+  "productName": "Teman Guru",
+  "packageName": "temanguru",
+  "github": {
+    "owner": "hellzard",
+    "repository": "temanguru",
+    "fullName": "hellzard/temanguru",
+    "remote": "https://github.com/hellzard/temanguru.git",
+    "defaultBranch": "main",
+    "repositoryAlreadyExists": true
+  },
+  "vercel": {
+    "projectName": "temanguru",
+    "productionUrl": "https://temanguru.vercel.app"
+  },
+  "locale": "id-ID",
+  "ai": {
+    "enabled": false,
+    "gate": "Explicit user approval after core hardening"
+  },
+  "workspaceType": "hybrid-agent-autopilot",
+  "starterCode": {
+    "included": true,
+    "scopeDocument": "STARTER_CODE_SCOPE.md",
+    "featureComplete": false
+  },
+  "autopilot": {
+    "enabled": true,
+    "workflow": "/autopilot-setup",
+    "manualCommandsExpectedFromUser": false
+  }
+}
