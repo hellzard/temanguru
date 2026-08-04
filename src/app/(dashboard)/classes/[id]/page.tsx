@@ -63,7 +63,7 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
       
       <AddStudentForm classId={classId} />
       
-      <StudentList students={students} />
+      <StudentList students={students} classId={classId} />
     </div>
   );
 }

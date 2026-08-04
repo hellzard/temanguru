@@ -6,10 +6,20 @@ import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import Link from "next/link";
 
-export function StudentList({ students }: { students: Record<string, unknown>[] }) {
+export function StudentList({ students, classId }: { students: Record<string, unknown>[], classId: string }) {
   return (
     <div className="mt-8 space-y-4">
-      <h2 className="text-lg font-bold text-slate-950">Daftar Murid</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-slate-950">Daftar Murid</h2>
+        {students.length > 0 && (
+          <Link 
+            href={`/classes/${classId}/group-builder`}
+            className="flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+          >
+            <User size={16} /> Pembuat Kelompok
+          </Link>
+        )}
+      </div>
       {students.length === 0 ? (
         <p className="text-sm text-slate-500">Belum ada murid di kelas ini. Silakan tambah baru.</p>
       ) : (

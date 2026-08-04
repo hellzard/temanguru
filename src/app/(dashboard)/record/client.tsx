@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, UserCheck, UserX, Clock, Stethoscope, Briefcase } from "lucide-react";
+import { Check, Loader2, UserCheck, UserX, Clock, Stethoscope, Briefcase, Maximize, Minimize } from "lucide-react";
 import { saveClassRecord } from "./actions";
 import { saveToOutbox } from "@/lib/offline-db";
 
@@ -69,6 +69,51 @@ export function ClassRecordForm({
   const [reflection, setReflection] = useState((existingJournal?.reflection as string) || "");
   const [obstacle, setObstacle] = useState((existingJournal?.obstacle as string) || "");
   const [followUp, setFollowUp] = useState((existingJournal?.follow_up as string) || "");
+
+  // Focus Mode State
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Define an inline type for wakeLock to satisfy TypeScript without using 'any'
+  interface WakeLockSentinel { release: () => Promise<void> }
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFocusMode(false);
+        if (wakeLockRef.current) {
+          wakeLockRef.current.release().catch(console.error);
+          wakeLockRef.current = null;
+        }
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFocusMode = async () => {
+    if (!document.fullscreenElement) {
+      try {
+        if (containerRef.current) {
+          await containerRef.current.requestFullscreen();
+        }
+        if ('wakeLock' in navigator) {
+          const nav = navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } };
+          wakeLockRef.current = await nav.wakeLock.request('screen');
+        }
+        setIsFocusMode(true);
+      } catch (err) {
+        console.error("Error attempting to enable focus mode:", err);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+      setIsFocusMode(false);
+    }
+
+  };
 
   const handleAssignmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -158,9 +203,29 @@ export function ClassRecordForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* 1. Pengaturan Dasar */}
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div ref={containerRef} className={isFocusMode ? "fixed inset-0 z-[100] bg-slate-50 overflow-y-auto p-4 sm:p-8" : ""}>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className={isFocusMode ? "text-xl font-bold text-slate-900" : "sr-only"}>Mode Fokus Mengajar</h2>
+        <button
+          type="button"
+          onClick={toggleFocusMode}
+          className="ml-auto flex items-center gap-2 rounded-xl bg-indigo-100 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-200"
+        >
+          {isFocusMode ? (
+            <>
+              <Minimize size={16} /> Keluar Mode Fokus
+            </>
+          ) : (
+            <>
+              <Maximize size={16} /> Mode Fokus
+            </>
+          )}
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className={`space-y-8 ${isFocusMode ? "max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200" : ""}`}>
+        {/* 1. Pengaturan Dasar */}
+        <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="assignment" className="text-sm font-semibold text-slate-900">Kelas & Mata Pelajaran</label>
           <select
@@ -333,6 +398,7 @@ export function ClassRecordForm({
           Belum ada murid di kelas ini.
         </div>
       )}
-    </form>
+      </form>
+    </div>
   );
 }

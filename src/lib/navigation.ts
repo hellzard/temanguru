@@ -1,4 +1,5 @@
 import {
+  Award,
   BookOpen,
   CalendarDays,
   FileCheck2,
@@ -18,6 +19,7 @@ export const dashboardNavigation = [
   { href: "/students", label: "Murid", icon: Users },
   { href: "/record", label: "Catat Kelas", icon: FileCheck2 },
   { href: "/assessment", label: "Penilaian", icon: FileSpreadsheet },
+  { href: "/grades", label: "Buku Nilai", icon: Award },
   { href: "/recap", label: "Rekap & Tindak Lanjut", icon: ListTodo },
   { href: "/schedules", label: "Jadwal", icon: CalendarDays },
   { href: "/settings", label: "Pengaturan", icon: Settings },

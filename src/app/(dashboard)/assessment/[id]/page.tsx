@@ -68,6 +68,13 @@ export default async function AssessmentDetailPage(props: { params: Promise<{ id
     .select("*")
     .eq("assessment_id", assessment_id);
 
+  // Get remedial history
+  const { data: remedialAttempts } = await supabase
+    .from("remedial_attempts")
+    .select("*")
+    .eq("assessment_id", assessment_id)
+    .order("attempt_number", { ascending: true });
+
   return (
     <div>
       <div className="mb-4">
@@ -85,11 +92,12 @@ export default async function AssessmentDetailPage(props: { params: Promise<{ id
         {classData?.name} — {subjectData?.name}
       </div>
 
-      <div className="max-w-4xl">
+      <div className="max-w-5xl">
         <ScoreClient 
           assessmentId={assessment_id}
           students={students}
           existingScores={existingScores || []}
+          remedialAttempts={remedialAttempts || []}
         />
       </div>
     </div>

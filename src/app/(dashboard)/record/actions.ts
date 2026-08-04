@@ -160,3 +160,140 @@ export async function saveClassRecord(prevState: unknown, formData: FormData) {
 
   return { success: true, message: "Catatan kelas berhasil disimpan." };
 }
+
+export async function syncClassRecord(payload: {
+  assignment_id: string;
+  date: string;
+  attendance: { student_id: string; status: string }[];
+  topic: string;
+  activity_summary?: string;
+  reflection?: string;
+  obstacle?: string;
+  follow_up?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Anda belum masuk." };
+  }
+
+  const { data: member } = await supabase
+    .from("school_members")
+    .select("school_id")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .limit(1)
+    .single();
+
+  if (!member) {
+    return { error: "Akun Anda tidak aktif di sekolah mana pun." };
+  }
+
+  const parsed = classRecordSchema.safeParse({
+    assignment_id: payload.assignment_id,
+    date: payload.date,
+    attendance: JSON.stringify(payload.attendance), // convert to string to pass the schema check
+    topic: payload.topic,
+    activity_summary: payload.activity_summary || "",
+    reflection: payload.reflection || "",
+    obstacle: payload.obstacle || "",
+    follow_up: payload.follow_up || "",
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const {
+    assignment_id,
+    date,
+    attendance,
+    topic,
+    activity_summary,
+    reflection,
+    obstacle,
+    follow_up
+  } = parsed.data;
+
+  // 1. Verify assignment belongs to user
+  const { data: assignmentData } = await supabase
+    .from("teaching_assignments")
+    .select("id")
+    .eq("id", assignment_id)
+    .eq("teacher_id", user.id)
+    .eq("school_id", member.school_id)
+    .single();
+
+  if (!assignmentData) {
+    return { error: "Penugasan mengajar tidak ditemukan atau Anda tidak memiliki akses." };
+  }
+
+  // 2. UPSERT Attendance Session
+  const { data: sessionData, error: sessionError } = await supabase
+    .from("attendance_sessions")
+    .upsert({
+      school_id: member.school_id,
+      teaching_assignment_id: assignment_id,
+      session_date: date,
+      state: "final",
+      created_by: user.id
+    }, {
+      onConflict: "teaching_assignment_id, session_date"
+    })
+    .select("id")
+    .single();
+
+  if (sessionError || !sessionData) {
+    return { error: `Gagal menyimpan sesi presensi: ${sessionError?.message}` };
+  }
+
+  const sessionId = sessionData.id;
+
+  // 3. UPSERT Attendance Records
+  if (attendance.length > 0) {
+    const recordsPayload = attendance.map(a => ({
+      attendance_session_id: sessionId,
+      student_id: a.student_id,
+      status: a.status
+    }));
+
+    const { error: recordsError } = await supabase
+      .from("attendance_records")
+      .upsert(recordsPayload, {
+        onConflict: "attendance_session_id, student_id"
+      });
+
+    if (recordsError) {
+      return { error: `Gagal menyimpan data presensi murid: ${recordsError.message}` };
+    }
+  }
+
+  // 4. UPSERT Teaching Journal
+  const { error: journalError } = await supabase
+    .from("teaching_journals")
+    .upsert({
+      school_id: member.school_id,
+      teaching_assignment_id: assignment_id,
+      attendance_session_id: sessionId,
+      journal_date: date,
+      topic: topic,
+      activity_summary: activity_summary || null,
+      reflection: reflection || null,
+      obstacle: obstacle || null,
+      follow_up: follow_up || null,
+      state: "final",
+      created_by: user.id
+    }, {
+      onConflict: "teaching_assignment_id, journal_date"
+    });
+
+  if (journalError) {
+    return { error: `Gagal menyimpan jurnal mengajar: ${journalError.message}` };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/record");
+
+  return { success: true, message: "Catatan kelas berhasil disinkronisasi." };
+}

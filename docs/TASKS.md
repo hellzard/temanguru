@@ -33,7 +33,7 @@ Gunakan `docs/IMPLEMENTATION_WAVES.md` sebagai urutan wajib. Centang hanya setel
 ## Wave 2 — Teaching flow
 - [x] **Slice 1: Catat Kelas 60 Detik**
 - [x] **Slice 2: Follow-up list and monthly recap/export**
-- [ ] **Slice 3: Offline draft for the slice**
+- [x] **Slice 3: Offline draft for the slice**
 
 ## Wave 3 — Assessment
 - [ ] Assessment and weighting.
