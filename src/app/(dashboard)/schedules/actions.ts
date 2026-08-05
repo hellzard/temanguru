@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -38,20 +39,14 @@ export async function createSchedule(prevState: unknown, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Sesi tidak valid." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { error: "Tidak memiliki akses ke sekolah." };
 
   const { data: activeYear } = await supabase
     .from("academic_years")
     .select("id")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .eq("is_active", true)
     .limit(1)
     .single();
@@ -64,7 +59,7 @@ export async function createSchedule(prevState: unknown, formData: FormData) {
   const { data: existingAssignment } = await supabase
     .from("teaching_assignments")
     .select("id")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .eq("academic_year_id", activeYear.id)
     .eq("teacher_id", user.id)
     .eq("class_id", class_id)
@@ -81,7 +76,7 @@ export async function createSchedule(prevState: unknown, formData: FormData) {
     const { data: newAssignment, error: assignmentError } = await supabase
       .from("teaching_assignments")
       .insert({
-        school_id: member.school_id,
+        school_id: member.schoolId,
         academic_year_id: activeYear.id,
         teacher_id: user.id,
         class_id: class_id,
@@ -101,7 +96,7 @@ export async function createSchedule(prevState: unknown, formData: FormData) {
   const { error: scheduleError } = await supabase
     .from("schedules")
     .insert({
-      school_id: member.school_id,
+      school_id: member.schoolId,
       teaching_assignment_id: assignmentId,
       day_of_week: day_of_week,
       starts_at: starts_at,

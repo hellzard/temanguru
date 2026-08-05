@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, ChartNoAxesColumnIncreasing, ClipboardCheck, Clock3, Plus, Users, CalendarX2 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -23,24 +24,18 @@ export default async function DashboardPage() {
   const currentDayIndex = todayDate.getDay() === 0 ? 7 : todayDate.getDay();
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("school_id, schools(name), profiles(display_name)")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .limit(1)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
-      // @ts-expect-error Supabase types for joined tables might not infer correctly
-      schoolName = member.schools?.name || "Sekolah";
-      // @ts-expect-error Supabase types for joined tables might not infer correctly
-      userName = member.profiles?.display_name || "Guru";
+      schoolName = member.schoolName || "Sekolah";
+      
+      const { data: profileData } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
+      userName = profileData?.display_name || "Guru";
 
       const { data: activeYear } = await supabase
         .from("academic_years")
         .select("id")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .eq("is_active", true)
         .limit(1)
         .single();
@@ -61,7 +56,7 @@ export default async function DashboardPage() {
               subjects ( name )
             )
           `)
-          .eq("school_id", member.school_id)
+          .eq("school_id", member.schoolId)
           .eq("day_of_week", currentDayIndex)
           .eq("teaching_assignments.teacher_id", user.id)
           .eq("teaching_assignments.academic_year_id", activeYearId)
@@ -78,7 +73,7 @@ export default async function DashboardPage() {
         const { data: assignments } = await supabase
           .from("teaching_assignments")
           .select("class_id")
-          .eq("school_id", member.school_id)
+          .eq("school_id", member.schoolId)
           .eq("teacher_id", user.id)
           .eq("academic_year_id", activeYearId);
           

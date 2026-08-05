@@ -1,113 +1,98 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { requireActiveSchool } from "@/lib/schools/active-school";
+import { createClient } from "@/lib/supabase/server";
 
 const createItemSchema = z.object({
-  name: z.string().min(1, "Nama barang wajib diisi"),
-  code: z.string().min(1, "Kode/Nomor seri wajib diisi"),
+  name: z.string().trim().min(1, "Nama barang wajib diisi").max(180),
+  code: z.string().trim().min(1, "Kode/Nomor seri wajib diisi").max(100),
   category: z.enum(["electronics", "furniture", "sports", "books", "other"]),
-  location: z.string().optional(),
+  location: z.string().trim().max(180).optional(),
   condition: z.enum(["good", "fair", "damaged"]),
 });
 
-export async function createInventoryItem(prevState: unknown, formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "Unauthorized" };
-
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!member) return { success: false, message: "User not in a school" };
-
-  const parsed = createItemSchema.safeParse({
-    name: formData.get("name"),
-    code: formData.get("code"),
-    category: formData.get("category") || "other",
-    location: formData.get("location"),
-    condition: formData.get("condition") || "good",
-  });
-
-  if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
-
-  const { error } = await supabase.from("inventory_items").insert({
-    school_id: member.school_id,
-    name: parsed.data.name,
-    code: parsed.data.code,
-    category: parsed.data.category,
-    location: parsed.data.location,
-    condition: parsed.data.condition,
-    is_available: true
-  });
-
-  if (error) {
-    if (error.code === '23505') { // unique violation
-      return { success: false, message: "Kode barang sudah terdaftar" };
+export async function createInventoryItem(_prevState: unknown, formData: FormData) {
+  try {
+    const context = await requireActiveSchool();
+    if (!["owner", "admin"].includes(context.active.role)) {
+      return { success: false, message: "Hanya owner atau admin yang dapat menambah inventaris." };
     }
-    console.error("Create item error:", error);
-    return { success: false, message: "Gagal menyimpan barang" };
-  }
 
-  revalidatePath("/operations/inventory");
-  return { success: true, message: "Barang berhasil ditambahkan" };
+    const parsed = createItemSchema.safeParse({
+      name: formData.get("name"),
+      code: formData.get("code"),
+      category: formData.get("category") || "other",
+      location: formData.get("location") || undefined,
+      condition: formData.get("condition") || "good",
+    });
+    if (!parsed.success) {
+      return { success: false, message: parsed.error.issues[0].message };
+    }
+
+    const supabase = await createClient();
+    const { error } = await supabase.from("inventory_items").insert({
+      school_id: context.active.schoolId,
+      name: parsed.data.name,
+      code: parsed.data.code,
+      category: parsed.data.category,
+      location: parsed.data.location || null,
+      condition: parsed.data.condition,
+      is_available: true,
+    });
+
+    if (error?.code === "23505") {
+      return { success: false, message: "Kode barang sudah terdaftar." };
+    }
+    if (error) {
+      console.error("Create inventory item failed", { code: error.code });
+      return { success: false, message: "Barang belum berhasil disimpan." };
+    }
+
+    revalidatePath("/operations/inventory");
+    return { success: true, message: "Barang berhasil ditambahkan." };
+  } catch (error) {
+    console.error("Inventory context failed", error);
+    return { success: false, message: "Ruang kerja sekolah belum dapat ditentukan." };
+  }
 }
 
 const loanSchema = z.object({
   item_id: z.string().uuid(),
+  idempotency_key: z.string().uuid().optional(),
 });
 
-export async function borrowItem(prevState: unknown, formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "Unauthorized" };
+export async function borrowItem(_prevState: unknown, formData: FormData) {
+  try {
+    await requireActiveSchool();
+    const parsed = loanSchema.safeParse({
+      item_id: formData.get("item_id"),
+      idempotency_key: formData.get("idempotency_key") || undefined,
+    });
+    if (!parsed.success) return { success: false, message: "Data peminjaman tidak valid." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("id, school_id")
-    .eq("user_id", user.id)
-    .single();
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("borrow_inventory_item", {
+      p_item_id: parsed.data.item_id,
+      p_idempotency_key: parsed.data.idempotency_key ?? randomUUID(),
+      p_due_date: null,
+    });
 
-  if (!member) return { success: false, message: "User not in a school" };
+    if (error) {
+      console.error("Borrow inventory failed", { code: error.code });
+      return { success: false, message: error.message || "Barang belum dapat dipinjam." };
+    }
 
-  const parsed = loanSchema.safeParse({
-    item_id: formData.get("item_id"),
-  });
-
-  if (!parsed.success) return { success: false, message: "ID Barang tidak valid" };
-
-  // Check if item is available
-  const { data: item } = await supabase
-    .from("inventory_items")
-    .select("is_available")
-    .eq("id", parsed.data.item_id)
-    .single();
-    
-  if (!item || !item.is_available) {
-    return { success: false, message: "Barang sedang tidak tersedia/dipinjam" };
+    revalidatePath("/operations/inventory");
+    return {
+      success: true,
+      message: "Berhasil meminjam barang.",
+      loanId: typeof data === "string" ? data : undefined,
+    };
+  } catch (error) {
+    console.error("Borrow context failed", error);
+    return { success: false, message: "Ruang kerja sekolah belum dapat ditentukan." };
   }
-
-  // Update item availability
-  await supabase.from("inventory_items").update({ is_available: false }).eq("id", parsed.data.item_id);
-
-  // Insert loan
-  const { error } = await supabase.from("inventory_loans").insert({
-    school_id: member.school_id,
-    item_id: parsed.data.item_id,
-    borrower_id: member.id,
-    status: "active"
-  });
-
-  if (error) {
-    // rollback
-    await supabase.from("inventory_items").update({ is_available: true }).eq("id", parsed.data.item_id);
-    return { success: false, message: "Gagal mencatat peminjaman" };
-  }
-
-  revalidatePath("/operations/inventory");
-  return { success: true, message: "Berhasil meminjam barang" };
 }

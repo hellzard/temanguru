@@ -11,11 +11,19 @@ const items = [
 
 export function MobileNav() {
   return (
-    <nav aria-label="Navigasi utama seluler" className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+    <nav
+      aria-label="Navigasi utama seluler"
+      className="tg-surface fixed inset-x-0 bottom-0 z-40 border-t px-2 pb-[env(safe-area-inset-bottom)] lg:hidden"
+    >
       <div className="mx-auto grid max-w-md grid-cols-5">
         {items.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium text-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">
-            <Icon size={20} aria-hidden="true" />{label}
+          <Link
+            key={href}
+            href={href}
+            className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-medium text-[var(--tg-text-muted)] hover:text-[var(--tg-primary)]"
+          >
+            <Icon size={20} aria-hidden="true" />
+            {label}
           </Link>
         ))}
       </div>

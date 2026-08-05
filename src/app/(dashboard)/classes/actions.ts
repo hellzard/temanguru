@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -23,20 +24,14 @@ export async function createClass(prevState: unknown, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Sesi tidak valid." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { error: "Tidak memiliki akses ke sekolah." };
 
   const { data: activeYear } = await supabase
     .from("academic_years")
     .select("id")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .eq("is_active", true)
     .limit(1)
     .single();
@@ -44,7 +39,7 @@ export async function createClass(prevState: unknown, formData: FormData) {
   if (!activeYear) return { error: "Tidak ada tahun ajaran aktif. Silakan atur di Pengaturan terlebih dahulu." };
 
   const { error } = await supabase.from("classes").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     academic_year_id: activeYear.id,
     name: parsed.data.name,
     grade_level: parsed.data.grade_level || null,
@@ -89,14 +84,7 @@ export async function addStudentToClass(classId: string, formData: FormData) {
 
   if (!classData) return { error: "Kelas tidak ditemukan." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("school_id", classData.school_id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { error: "Tidak memiliki akses ke sekolah ini." };
 
@@ -108,7 +96,7 @@ export async function addStudentToClass(classId: string, formData: FormData) {
     const { data: existingStudent } = await supabase
       .from("students")
       .select("id")
-      .eq("school_id", member.school_id)
+      .eq("school_id", member.schoolId)
       .eq("local_code", localCode)
       .limit(1)
       .maybeSingle();
@@ -123,7 +111,7 @@ export async function addStudentToClass(classId: string, formData: FormData) {
     const { data: newStudent, error: insertStudentError } = await supabase
       .from("students")
       .insert({
-        school_id: member.school_id,
+        school_id: member.schoolId,
         display_name: parsed.data.display_name,
         local_code: localCode,
       })

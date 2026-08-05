@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import RecapClient from "./client";
@@ -18,12 +19,7 @@ export default async function RecapPage({
     redirect("/login");
   }
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) {
     return (
@@ -37,7 +33,7 @@ export default async function RecapPage({
   const { data: activeYear } = await supabase
     .from("academic_years")
     .select("id, name")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .eq("is_active", true)
     .single();
 

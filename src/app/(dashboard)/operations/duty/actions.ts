@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -15,11 +16,7 @@ export async function createDutySchedule(prevState: unknown, formData: FormData)
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id, role")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member || member.role !== "admin") {
     return { success: false, message: "Hanya admin yang dapat menyusun jadwal" };
@@ -34,7 +31,7 @@ export async function createDutySchedule(prevState: unknown, formData: FormData)
   if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
 
   const { error } = await supabase.from("duty_schedules").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     member_id: parsed.data.member_id,
     date: parsed.data.date,
     duty_type: parsed.data.duty_type,

@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { PortfoliosClient } from "./client";
 
@@ -14,17 +15,13 @@ export default async function PortfoliosPage() {
   let students: Record<string, unknown>[] = [];
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("id, school_id")
-      .eq("user_id", user.id)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
       const { data: spData } = await supabase
         .from("portfolios_student")
         .select(`*, students(display_name, local_code)`)
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("created_at", { ascending: false });
 
       if (spData) studentPortfolios = spData;
@@ -32,7 +29,7 @@ export default async function PortfoliosPage() {
       const { data: tpData } = await supabase
         .from("portfolios_teacher")
         .select("*")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .eq("member_id", member.id)
         .order("created_at", { ascending: false });
         
@@ -41,7 +38,7 @@ export default async function PortfoliosPage() {
       const { data: stData } = await supabase
         .from("students")
         .select("id, display_name, local_code")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("display_name", { ascending: true });
         
       if (stData) students = stData;

@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -13,13 +14,7 @@ export default async function AcademicYearsPage() {
     redirect("/login");
   }
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id, role")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) {
     redirect("/onboarding");
@@ -28,7 +23,7 @@ export default async function AcademicYearsPage() {
   const { data: years } = await supabase
     .from("academic_years")
     .select("*")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .order("starts_on", { ascending: false });
 
   return (

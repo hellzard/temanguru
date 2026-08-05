@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -23,14 +24,7 @@ export default async function ImportCsvPage({ params }: { params: Promise<{ id: 
 
   if (!classData) redirect("/classes");
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("school_id", classData.school_id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) redirect("/classes");
 

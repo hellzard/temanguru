@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -28,19 +29,13 @@ export async function createAcademicYear(prevState: unknown, formData: FormData)
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Sesi tidak valid." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id, role")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { error: "Tidak memiliki akses ke sekolah." };
   if (member.role === "teacher") return { error: "Hanya admin/pemilik yang dapat menambah tahun ajaran." };
 
   const { error } = await supabase.from("academic_years").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     name: parsed.data.name,
     starts_on: parsed.data.starts_on,
     ends_on: parsed.data.ends_on,
@@ -61,13 +56,7 @@ export async function setActiveAcademicYear(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Sesi tidak valid." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id, role")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { error: "Tidak memiliki akses ke sekolah." };
   if (member.role === "teacher") return { error: "Hanya admin/pemilik yang dapat mengubah tahun ajaran aktif." };
@@ -76,14 +65,14 @@ export async function setActiveAcademicYear(id: string) {
   await supabase
     .from("academic_years")
     .update({ is_active: false })
-    .eq("school_id", member.school_id);
+    .eq("school_id", member.schoolId);
 
   // 2. Set the chosen one to active
   const { error } = await supabase
     .from("academic_years")
     .update({ is_active: true })
     .eq("id", id)
-    .eq("school_id", member.school_id);
+    .eq("school_id", member.schoolId);
 
   if (error) {
     console.error("setActiveAcademicYear failed:", error);

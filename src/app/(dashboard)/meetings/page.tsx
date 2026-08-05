@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { MeetingsClient } from "./client";
 
@@ -13,17 +14,13 @@ export default async function MeetingsPage() {
   let decisions: Record<string, unknown>[] = [];
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("school_id")
-      .eq("user_id", user.id)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
       const { data: mData } = await supabase
         .from("meetings")
         .select("*")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("date", { ascending: false });
 
       if (mData) {

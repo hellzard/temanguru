@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -23,18 +24,12 @@ export async function createSubject(prevState: unknown, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Sesi tidak valid." };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { error: "Tidak memiliki akses ke sekolah." };
 
   const { error } = await supabase.from("subjects").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     name: parsed.data.name,
     code: parsed.data.code || null,
   });

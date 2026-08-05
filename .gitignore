@@ -14,14 +14,12 @@ test-results/
 *.pem
 *.key
 
-# Vercel/local tools
+# Local services and deployment tools
 .vercel/
+supabase/.temp/
 .agent-artifacts/
 .antigravity-cache/
 
 # OS/editor
 .DS_Store
 Thumbs.db
-
-.vercel
-.env*

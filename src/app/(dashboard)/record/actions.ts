@@ -1,8 +1,10 @@
 "use server";
 
-import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { requireActiveSchool } from "@/lib/schools/active-school";
+import { createClient } from "@/lib/supabase/server";
 
 const attendanceRecordSchema = z.object({
   student_id: z.string().uuid(),
@@ -12,288 +14,130 @@ const attendanceRecordSchema = z.object({
 const classRecordSchema = z.object({
   assignment_id: z.string().uuid(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal tidak valid"),
-  attendance: z.string().transform((str, ctx) => {
+  attendance: z.array(attendanceRecordSchema),
+  topic: z.string().trim().min(1, "Topik wajib diisi").max(500),
+  activity_summary: z.string().max(5000).default(""),
+  reflection: z.string().max(5000).default(""),
+  obstacle: z.string().max(3000).default(""),
+  follow_up: z.string().max(3000).default(""),
+});
+
+const formSchema = z.object({
+  assignment_id: z.string().uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  attendance: z.string().transform((value, context) => {
     try {
-      const parsed = JSON.parse(str);
-      const result = z.array(attendanceRecordSchema).safeParse(parsed);
+      const result = z.array(attendanceRecordSchema).safeParse(JSON.parse(value));
       if (!result.success) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Struktur data presensi tidak valid" });
+        context.addIssue({ code: "custom", message: "Struktur data presensi tidak valid" });
         return z.NEVER;
       }
       return result.data;
     } catch {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data presensi bukan JSON valid" });
+      context.addIssue({ code: "custom", message: "Data presensi bukan JSON valid" });
       return z.NEVER;
     }
   }),
-  topic: z.string().min(1, "Topik wajib diisi").max(500, "Maksimal 500 karakter"),
-  activity_summary: z.string().max(5000, "Maksimal 5000 karakter").optional().default(""),
-  reflection: z.string().max(5000, "Maksimal 5000 karakter").optional().default(""),
-  obstacle: z.string().max(3000, "Maksimal 3000 karakter").optional().default(""),
-  follow_up: z.string().max(3000, "Maksimal 3000 karakter").optional().default(""),
+  topic: z.string(),
+  activity_summary: z.string().optional().default(""),
+  reflection: z.string().optional().default(""),
+  obstacle: z.string().optional().default(""),
+  follow_up: z.string().optional().default(""),
+}).transform((value, context) => {
+  const result = classRecordSchema.safeParse(value);
+  if (!result.success) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const issue of result.error.issues) context.addIssue(issue as any);
+    return z.NEVER;
+  }
+  return result.data;
 });
 
-export async function saveClassRecord(prevState: unknown, formData: FormData) {
+type ClassRecordInput = z.infer<typeof classRecordSchema>;
+
+function stableUuid(parts: unknown[]): string {
+  const digest = createHash("sha256")
+    .update(JSON.stringify(parts))
+    .digest("hex")
+    .slice(0, 32)
+    .split("");
+  digest[12] = "5";
+  digest[16] = ["8", "9", "a", "b"][Number.parseInt(digest[16], 16) % 4];
+  return `${digest.slice(0, 8).join("")}-${digest.slice(8, 12).join("")}-${digest.slice(12, 16).join("")}-${digest.slice(16, 20).join("")}-${digest.slice(20).join("")}`;
+}
+
+function normalizeForIdempotency(input: ClassRecordInput) {
+  return {
+    ...input,
+    attendance: [...input.attendance].sort((left, right) =>
+      left.student_id.localeCompare(right.student_id),
+    ),
+  };
+}
+
+async function persistClassRecord(input: ClassRecordInput) {
+  const context = await requireActiveSchool();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const idempotencyKey = stableUuid([
+    "class-record-v2",
+    context.userId,
+    context.active.schoolId,
+    normalizeForIdempotency(input),
+  ]);
 
-  if (!user) {
-    return { error: "Anda belum masuk." };
+  const { data, error } = await supabase.rpc("save_class_record_transaction", {
+    p_school_id: context.active.schoolId,
+    p_assignment_id: input.assignment_id,
+    p_session_date: input.date,
+    p_attendance: input.attendance,
+    p_topic: input.topic,
+    p_activity_summary: input.activity_summary || null,
+    p_reflection: input.reflection || null,
+    p_obstacle: input.obstacle || null,
+    p_follow_up: input.follow_up || null,
+    p_idempotency_key: idempotencyKey,
+  });
+
+  if (error) {
+    console.error("Save class record RPC failed", { code: error.code });
+    return { error: error.message || "Catatan kelas belum berhasil disimpan." };
   }
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  revalidatePath("/dashboard");
+  revalidatePath("/record");
+  return { success: true, message: "Catatan kelas berhasil disimpan.", data };
+}
 
-  if (!member) {
-    return { error: "Akun Anda tidak aktif di sekolah mana pun." };
-  }
-
-  const parsed = classRecordSchema.safeParse({
+export async function saveClassRecord(_prevState: unknown, formData: FormData) {
+  const parsed = formSchema.safeParse({
     assignment_id: formData.get("assignment_id"),
     date: formData.get("date"),
     attendance: formData.get("attendance"),
     topic: formData.get("topic"),
-    activity_summary: formData.get("activity_summary"),
-    reflection: formData.get("reflection"),
-    obstacle: formData.get("obstacle"),
-    follow_up: formData.get("follow_up"),
+    activity_summary: formData.get("activity_summary") || "",
+    reflection: formData.get("reflection") || "",
+    obstacle: formData.get("obstacle") || "",
+    follow_up: formData.get("follow_up") || "",
   });
 
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0].message };
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  try {
+    return await persistClassRecord(parsed.data);
+  } catch (error) {
+    console.error("Class record context failed", error);
+    return { error: "Ruang kerja sekolah belum dapat ditentukan." };
   }
-
-  const {
-    assignment_id,
-    date,
-    attendance,
-    topic,
-    activity_summary,
-    reflection,
-    obstacle,
-    follow_up
-  } = parsed.data;
-
-  // 1. Verify assignment belongs to user
-  const { data: assignmentData } = await supabase
-    .from("teaching_assignments")
-    .select("id")
-    .eq("id", assignment_id)
-    .eq("teacher_id", user.id)
-    .eq("school_id", member.school_id)
-    .single();
-
-  if (!assignmentData) {
-    return { error: "Penugasan mengajar tidak ditemukan atau Anda tidak memiliki akses." };
-  }
-
-  // 2. UPSERT Attendance Session
-  const { data: sessionData, error: sessionError } = await supabase
-    .from("attendance_sessions")
-    .upsert({
-      school_id: member.school_id,
-      teaching_assignment_id: assignment_id,
-      session_date: date,
-      state: "final",
-      created_by: user.id
-    }, {
-      onConflict: "teaching_assignment_id, session_date"
-    })
-    .select("id")
-    .single();
-
-  if (sessionError || !sessionData) {
-    return { error: `Gagal menyimpan sesi presensi: ${sessionError?.message}` };
-  }
-
-  const sessionId = sessionData.id;
-
-  // 3. UPSERT Attendance Records
-  if (attendance.length > 0) {
-    const recordsPayload = attendance.map(a => ({
-      attendance_session_id: sessionId,
-      student_id: a.student_id,
-      status: a.status
-    }));
-
-    const { error: recordsError } = await supabase
-      .from("attendance_records")
-      .upsert(recordsPayload, {
-        onConflict: "attendance_session_id, student_id"
-      });
-
-    if (recordsError) {
-      return { error: `Gagal menyimpan data presensi murid: ${recordsError.message}` };
-    }
-  }
-
-  // 4. UPSERT Teaching Journal
-  const { error: journalError } = await supabase
-    .from("teaching_journals")
-    .upsert({
-      school_id: member.school_id,
-      teaching_assignment_id: assignment_id,
-      attendance_session_id: sessionId,
-      journal_date: date,
-      topic: topic,
-      activity_summary: activity_summary || null,
-      reflection: reflection || null,
-      obstacle: obstacle || null,
-      follow_up: follow_up || null,
-      state: "final",
-      created_by: user.id
-    }, {
-      onConflict: "teaching_assignment_id, journal_date"
-    });
-
-  if (journalError) {
-    return { error: `Gagal menyimpan jurnal mengajar: ${journalError.message}` };
-  }
-
-  revalidatePath("/dashboard");
-  revalidatePath("/record");
-
-  return { success: true, message: "Catatan kelas berhasil disimpan." };
 }
 
-export async function syncClassRecord(payload: {
-  assignment_id: string;
-  date: string;
-  attendance: { student_id: string; status: string }[];
-  topic: string;
-  activity_summary?: string;
-  reflection?: string;
-  obstacle?: string;
-  follow_up?: string;
-}) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export async function syncClassRecord(payload: ClassRecordInput) {
+  const parsed = classRecordSchema.safeParse(payload);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  if (!user) {
-    return { error: "Anda belum masuk." };
+  try {
+    return await persistClassRecord(parsed.data);
+  } catch (error) {
+    console.error("Class record sync failed", error);
+    return { error: "Sinkronisasi belum berhasil." };
   }
-
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
-
-  if (!member) {
-    return { error: "Akun Anda tidak aktif di sekolah mana pun." };
-  }
-
-  const parsed = classRecordSchema.safeParse({
-    assignment_id: payload.assignment_id,
-    date: payload.date,
-    attendance: JSON.stringify(payload.attendance), // convert to string to pass the schema check
-    topic: payload.topic,
-    activity_summary: payload.activity_summary || "",
-    reflection: payload.reflection || "",
-    obstacle: payload.obstacle || "",
-    follow_up: payload.follow_up || "",
-  });
-
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0].message };
-  }
-
-  const {
-    assignment_id,
-    date,
-    attendance,
-    topic,
-    activity_summary,
-    reflection,
-    obstacle,
-    follow_up
-  } = parsed.data;
-
-  // 1. Verify assignment belongs to user
-  const { data: assignmentData } = await supabase
-    .from("teaching_assignments")
-    .select("id")
-    .eq("id", assignment_id)
-    .eq("teacher_id", user.id)
-    .eq("school_id", member.school_id)
-    .single();
-
-  if (!assignmentData) {
-    return { error: "Penugasan mengajar tidak ditemukan atau Anda tidak memiliki akses." };
-  }
-
-  // 2. UPSERT Attendance Session
-  const { data: sessionData, error: sessionError } = await supabase
-    .from("attendance_sessions")
-    .upsert({
-      school_id: member.school_id,
-      teaching_assignment_id: assignment_id,
-      session_date: date,
-      state: "final",
-      created_by: user.id
-    }, {
-      onConflict: "teaching_assignment_id, session_date"
-    })
-    .select("id")
-    .single();
-
-  if (sessionError || !sessionData) {
-    return { error: `Gagal menyimpan sesi presensi: ${sessionError?.message}` };
-  }
-
-  const sessionId = sessionData.id;
-
-  // 3. UPSERT Attendance Records
-  if (attendance.length > 0) {
-    const recordsPayload = attendance.map(a => ({
-      attendance_session_id: sessionId,
-      student_id: a.student_id,
-      status: a.status
-    }));
-
-    const { error: recordsError } = await supabase
-      .from("attendance_records")
-      .upsert(recordsPayload, {
-        onConflict: "attendance_session_id, student_id"
-      });
-
-    if (recordsError) {
-      return { error: `Gagal menyimpan data presensi murid: ${recordsError.message}` };
-    }
-  }
-
-  // 4. UPSERT Teaching Journal
-  const { error: journalError } = await supabase
-    .from("teaching_journals")
-    .upsert({
-      school_id: member.school_id,
-      teaching_assignment_id: assignment_id,
-      attendance_session_id: sessionId,
-      journal_date: date,
-      topic: topic,
-      activity_summary: activity_summary || null,
-      reflection: reflection || null,
-      obstacle: obstacle || null,
-      follow_up: follow_up || null,
-      state: "final",
-      created_by: user.id
-    }, {
-      onConflict: "teaching_assignment_id, journal_date"
-    });
-
-  if (journalError) {
-    return { error: `Gagal menyimpan jurnal mengajar: ${journalError.message}` };
-  }
-
-  revalidatePath("/dashboard");
-  revalidatePath("/record");
-
-  return { success: true, message: "Catatan kelas berhasil disinkronisasi." };
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -15,11 +16,7 @@ export async function createEventTask(prevState: unknown, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { success: false, message: "User not in a school" };
 
@@ -32,7 +29,7 @@ export async function createEventTask(prevState: unknown, formData: FormData) {
   if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
 
   const { error } = await supabase.from("event_tasks").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     event_id: parsed.data.event_id,
     title: parsed.data.title,
     description: parsed.data.description,

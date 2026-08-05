@@ -66,7 +66,8 @@ export function SyncStatus() {
         const result = await syncClassRecord({
           assignment_id: record.payload.assignment_id,
           date: record.payload.date,
-          attendance: record.payload.attendance,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          attendance: record.payload.attendance as any,
           topic: record.payload.topic,
           activity_summary: record.payload.activity_summary,
           reflection: record.payload.reflection,

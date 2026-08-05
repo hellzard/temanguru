@@ -17,13 +17,15 @@
     "test:e2e": "playwright test",
     "check:secrets": "node scripts/check-secrets.mjs",
     "verify:workspace": "node scripts/verify-hybrid-workspace.mjs",
-    "verify": "npm run verify:workspace && npm run check:secrets && npm run lint && npm run typecheck && npm run test && npm run build",
+    "verify": "npm run verify:workspace && npm run check:secrets && npm run check:tenant-context && npm run lint && npm run typecheck && npm run test && npm run build",
     "release:preflight": "node scripts/release-preflight.mjs",
-    "verify:core": "npm run verify:workspace && npm run check:secrets && npm run release:preflight && npm run lint && npm run typecheck && npm run test && npm run build",
+    "verify:core": "npm run verify:workspace && npm run check:secrets && npm run check:tenant-context && npm run release:preflight && npm run lint && npm run typecheck && npm run test && npm run build",
     "setup": "node scripts/setup.mjs",
     "verify:starter": "npm run check:secrets && npm run lint && npm run typecheck && npm run test && npm run build",
     "autopilot:setup": "node scripts/autopilot-bootstrap.mjs",
-    "autopilot:status": "node -e \"const fs=require('fs');const p='.agent-artifacts/autopilot-setup-status.json';console.log(fs.existsSync(p)?fs.readFileSync(p,'utf8'):'Belum ada status autopilot.')\""
+    "autopilot:status": "node -e \"const fs=require('fs');const p='.agent-artifacts/autopilot-setup-status.json';console.log(fs.existsSync(p)?fs.readFileSync(p,'utf8'):'Belum ada status autopilot.')\"",
+    "check:tenant-context": "node scripts/check-membership-context.mjs",
+    "verify:full": "npm run verify && npm run test:e2e"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.1",

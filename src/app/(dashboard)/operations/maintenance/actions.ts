@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -15,11 +16,7 @@ export async function createMaintenanceTicket(prevState: unknown, formData: Form
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("id, school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { success: false, message: "User not in a school" };
 
@@ -34,7 +31,7 @@ export async function createMaintenanceTicket(prevState: unknown, formData: Form
   const item_id = parsed.data.item_id && parsed.data.item_id.trim() !== "" ? parsed.data.item_id : null;
 
   const { error } = await supabase.from("maintenance_tickets").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     reporter_id: member.id,
     item_id,
     title: parsed.data.title,

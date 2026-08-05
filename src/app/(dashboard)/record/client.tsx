@@ -170,9 +170,9 @@ export function ClassRecordForm({
         }
 
         const result = await saveClassRecord(null, formData);
-        if (result.error) {
+        if ("error" in result && result.error) {
           setErrorMsg(result.error);
-        } else {
+        } else if ("success" in result) {
           setSuccessMsg(result.message || "Berhasil disimpan!");
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new Event('sync-status-changed'));

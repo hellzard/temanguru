@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { DutyClient } from "./client";
 
@@ -14,11 +15,7 @@ export default async function DutyPage() {
   let isAdmin = false;
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("school_id, role")
-      .eq("user_id", user.id)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
       isAdmin = member.role === "admin";
@@ -32,7 +29,7 @@ export default async function DutyPage() {
             users(name, email)
           )
         `)
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("date", { ascending: true });
 
       if (sData) {
@@ -47,7 +44,7 @@ export default async function DutyPage() {
             role,
             users(name, email)
           `)
-          .eq("school_id", member.school_id)
+          .eq("school_id", member.schoolId)
           .eq("status", "active")
           .order("role", { ascending: false });
           

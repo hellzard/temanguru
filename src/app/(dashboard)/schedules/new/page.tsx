@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -13,20 +14,14 @@ export default async function NewSchedulePage() {
 
   if (!user) redirect("/login");
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .limit(1)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) redirect("/onboarding");
 
   const { data: activeYear } = await supabase
     .from("academic_years")
     .select("id")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .eq("is_active", true)
     .limit(1)
     .single();
@@ -37,14 +32,14 @@ export default async function NewSchedulePage() {
   const { data: classes } = await supabase
     .from("classes")
     .select("id, name")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .eq("academic_year_id", activeYear.id)
     .order("name", { ascending: true });
 
   const { data: subjects } = await supabase
     .from("subjects")
     .select("id, name")
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .order("name", { ascending: true });
 
   return (

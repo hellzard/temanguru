@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Teman Guru",
     short_name: "Teman Guru",
-    description: "Ruang kerja harian guru: presensi, jurnal, nilai, dan laporan.",
+    description: "Ruang kerja harian guru: presensi, jurnal, nilai, dokumen, dan kegiatan sekolah.",
     id: "/",
     start_url: "/dashboard",
     scope: "/",
@@ -13,20 +13,15 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#4f46e5",
     lang: "id",
     icons: [
-      { src: "/icons/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      { src: "/icons/maskable-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
-    // Share Target API (Progressive Enhancement)
-    // Allows other apps to share text/links into Teman Guru's connection/portfolio composers
     share_target: {
       action: "/connect",
       method: "GET",
       enctype: "application/x-www-form-urlencoded",
-      params: {
-        title: "title",
-        text: "text",
-        url: "url"
-      }
-    }
+      params: { title: "title", text: "text", url: "url" },
+    },
   } as MetadataRoute.Manifest & { share_target: Record<string, unknown> };
 }

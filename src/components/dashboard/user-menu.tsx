@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { User, Settings } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { Palette, User } from "lucide-react";
 import { LogoutButton } from "./logout-button";
 
 export function UserMenu() {
@@ -21,22 +22,28 @@ export function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((value) => !value)}
         aria-label="Buka menu akun"
-        className="grid size-11 place-items-center rounded-full bg-indigo-100 font-semibold text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 transition hover:bg-indigo-200"
+        aria-expanded={isOpen}
+        className="grid size-11 place-items-center rounded-full bg-[color-mix(in_srgb,var(--tg-primary)_14%,transparent)] font-semibold text-[var(--tg-primary)]"
       >
         <User size={20} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-slate-900/5 py-1 z-50">
-          <div className="px-4 py-2 border-b border-slate-100">
-            <p className="text-sm font-semibold text-slate-900">Akun Saya</p>
+        <div className="tg-surface absolute right-0 z-50 mt-2 w-60 rounded-xl border py-1 shadow-lg">
+          <div className="border-b border-[var(--tg-border)] px-4 py-2">
+            <p className="text-sm font-semibold">Akun Saya</p>
           </div>
-          <button className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
-            <Settings size={16} className="mr-2" /> Pengaturan
-          </button>
-          <div className="border-t border-slate-100 mt-1 pt-1">
+          <Link
+            href="/settings/appearance"
+            onClick={() => setIsOpen(false)}
+            className="flex w-full items-center px-4 py-2 text-sm hover:bg-[var(--tg-surface-muted)]"
+          >
+            <Palette size={16} className="mr-2" />
+            Tampilan & Tema
+          </Link>
+          <div className="mt-1 border-t border-[var(--tg-border)] pt-1">
             <LogoutButton />
           </div>
         </div>

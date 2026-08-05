@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { EventsClient } from "./client";
 
@@ -12,17 +13,13 @@ export default async function EventsPage() {
   let events: Record<string, unknown>[] = [];
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("school_id")
-      .eq("user_id", user.id)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
       const { data } = await supabase
         .from("events")
         .select("*")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("starts_at", { ascending: false });
 
       if (data) {

@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { ConnectClient } from "./client";
 
@@ -12,17 +13,13 @@ export default async function ConnectPage() {
   let students: Record<string, unknown>[] = [];
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("school_id")
-      .eq("user_id", user.id)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
       const { data: stData } = await supabase
         .from("students")
         .select("id, display_name, local_code")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("display_name", { ascending: true });
         
       if (stData) students = stData;

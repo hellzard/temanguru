@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -16,11 +17,7 @@ export async function createStudentPortfolio(prevState: unknown, formData: FormD
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { success: false, message: "User not in a school" };
 
@@ -34,7 +31,7 @@ export async function createStudentPortfolio(prevState: unknown, formData: FormD
   if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
 
   const { error } = await supabase.from("portfolios_student").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     student_id: parsed.data.student_id,
     title: parsed.data.title,
     category: parsed.data.category,
@@ -62,11 +59,7 @@ export async function createTeacherPortfolio(prevState: unknown, formData: FormD
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("id, school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { success: false, message: "User not in a school" };
 
@@ -85,7 +78,7 @@ export async function createTeacherPortfolio(prevState: unknown, formData: FormD
   }
 
   const { error } = await supabase.from("portfolios_teacher").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     member_id: member.id,
     title: parsed.data.title,
     category: parsed.data.category,

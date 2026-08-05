@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { MaintenanceClient } from "./client";
 
@@ -13,17 +14,13 @@ export default async function MaintenancePage() {
   let items: Record<string, unknown>[] = [];
 
   if (user) {
-    const { data: member } = await supabase
-      .from("school_members")
-      .select("school_id")
-      .eq("user_id", user.id)
-      .single();
+    const { active: member } = await requireActiveSchool();
 
     if (member) {
       const { data: tData } = await supabase
         .from("maintenance_tickets")
         .select("*")
-        .eq("school_id", member.school_id)
+        .eq("school_id", member.schoolId)
         .order("created_at", { ascending: false });
 
       if (tData) {
@@ -33,7 +30,7 @@ export default async function MaintenancePage() {
       const { data: iData } = await supabase
         .from("inventory_items")
         .select("id, code, name")
-        .eq("school_id", member.school_id);
+        .eq("school_id", member.schoolId);
         
       if (iData) {
         items = iData;

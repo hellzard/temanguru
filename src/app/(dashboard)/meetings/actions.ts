@@ -1,5 +1,6 @@
 "use server";
 
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -16,11 +17,7 @@ export async function createMeeting(prevState: unknown, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { success: false, message: "User not in a school" };
 
@@ -34,7 +31,7 @@ export async function createMeeting(prevState: unknown, formData: FormData) {
   if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
 
   const { error } = await supabase.from("meetings").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     name: parsed.data.name,
     location: parsed.data.location,
     date: parsed.data.date,
@@ -61,11 +58,7 @@ export async function createMeetingDecision(prevState: unknown, formData: FormDa
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "Unauthorized" };
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) return { success: false, message: "User not in a school" };
 
@@ -77,7 +70,7 @@ export async function createMeetingDecision(prevState: unknown, formData: FormDa
   if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
 
   const { error } = await supabase.from("meeting_decisions").insert({
-    school_id: member.school_id,
+    school_id: member.schoolId,
     meeting_id: parsed.data.meeting_id,
     decision: parsed.data.decision,
     status: "pending"

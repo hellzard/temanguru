@@ -1,3 +1,4 @@
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 import { EventDetailClient } from "./client";
 import { notFound } from "next/navigation";
@@ -14,11 +15,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
     notFound();
   }
 
-  const { data: member } = await supabase
-    .from("school_members")
-    .select("school_id")
-    .eq("user_id", user.id)
-    .single();
+  const { active: member } = await requireActiveSchool();
 
   if (!member) {
     notFound();
@@ -28,7 +25,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
     .from("events")
     .select("*")
     .eq("id", params.id)
-    .eq("school_id", member.school_id)
+    .eq("school_id", member.schoolId)
     .single();
 
   if (!event) {
