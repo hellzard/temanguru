@@ -40,7 +40,7 @@ export function SubjectList({ subjects }: { subjects: Record<string, unknown>[] 
 export function CreateSubjectForm() {
   const [state, formAction, isPending] = useActionState(
     async (prevState: unknown, formData: FormData) => {
-      const res = await createSubject(formData);
+      const res = await createSubject(prevState, formData);
       if (res.error) return { error: res.error, success: false };
       return { error: null, success: true };
     },

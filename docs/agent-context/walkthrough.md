@@ -43,9 +43,16 @@ Integrasi data kalender harian ke dalam halaman *Dashboard* utama telah sukses d
 - **Server Actions terpisah (`actions.ts`)**: Fungsi CRUD nilai di-handle via *Server Actions* yang divalidasi oleh kebijakan Row Level Security (RLS) di sisi database untuk memastikan hanya guru bersangkutan / admin sekolah yang berhak mengisi dan melihat nilai tersebut.
 - **Navigasi Terpusat**: Memperbarui bilah samping (Sidebar) dengan menu **Penilaian**.
 
+## Wave 3 (Slice 2): Rapor Otomatis / Weighting Calculation
+- **Entry Point Terintegrasi**: Memodifikasi `src/app/(dashboard)/assessment/client.tsx` dengan penambahan tombol "Lihat Rapor Kelas" di daftar penilaian yang secara otomatis terhubung ke kelas yang dipilih.
+- **Perhitungan Otomatis**: Membuat halaman khusus (`/assessment/report/[assignmentId]`) untuk melakukan agregasi nilai akhir (akumulasi berbobot) dari setiap murid menggunakan rumus `Sum(Percentage * Weight) / Sum(Weight)`. 
+- **Tabel Rekap Nilai**: Menampilkan nilai per tugas dan nilai akhir pada antarmuka tabel ringkas. Nilai dasar disesuaikan dengan nilai ujian perbaikan (`final_score`) jika tersedia, lalu ke `original_score`, dan diasumsikan 0 jika belum ada.
+- **Dukungan Cetak Rapor**: Menambahkan fungsionalitas cetak (`window.print()`) dengan optimasi gaya `@media print` untuk menyembunyikan elemen dashboard (tombol, sidebar) sehingga rapor tercetak bersih bagai dokumen resmi.
+- **Verifikasi Kualitas**: Berhasil melewati uji *linting* (`npx eslint`) serta integritas tipe TypeScript (`npm run typecheck`), menjamin keamanan eksekusi dan tidak adanya *bug* tersembunyi.
+
 ## Next Smallest Vertical Slice
-**Wave 3 (Slice 2): Rapor Otomatis / Weighting Calculation**
-Setelah data nilai terkumpul, fitur selanjutnya adalah mengkalkulasikan nilai akhir siswa berdasarkan bobot tiap kategori penilaian (misalnya UTS 30%, UAS 40%, Tugas 30%) dan menampilkannya secara ringkas, sehingga rapor bayangan dapat dicetak atau disajikan kapan pun.
+**Wave 4 (Slice 1): Dokumen Studio (Document Templates)**
+Mengimplementasikan modul untuk pembuatan, pengelolaan, dan penandatanganan dokumen sekolah otomatis. Termasuk format kop surat, layout tanda tangan, hingga verifikasi identitas (opsional). Ini akan memungkinkan guru mencetak dokumen tanpa format ulang berulang kali.
 
 ## Validation Results
 

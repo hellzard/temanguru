@@ -9,7 +9,7 @@ const createSubjectSchema = z.object({
   code: z.string().trim().max(50, "Maksimal 50 karakter.").optional(),
 });
 
-export async function createSubject(formData: FormData) {
+export async function createSubject(prevState: unknown, formData: FormData) {
   const parsed = createSubjectSchema.safeParse({
     name: formData.get("name"),
     code: formData.get("code") || undefined,

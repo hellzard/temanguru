@@ -16,5 +16,17 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
       { src: "/icons/maskable-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
     ],
-  };
+    // Share Target API (Progressive Enhancement)
+    // Allows other apps to share text/links into Teman Guru's connection/portfolio composers
+    share_target: {
+      action: "/connect",
+      method: "GET",
+      enctype: "application/x-www-form-urlencoded",
+      params: {
+        title: "title",
+        text: "text",
+        url: "url"
+      }
+    }
+  } as MetadataRoute.Manifest & { share_target: Record<string, unknown> };
 }

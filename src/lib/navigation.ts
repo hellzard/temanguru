@@ -10,6 +10,10 @@ import {
   ListTodo,
   Settings,
   Users,
+  Presentation,
+  Megaphone,
+  BriefcaseBusiness,
+  Archive,
 } from "lucide-react";
 
 export const dashboardNavigation = [
@@ -24,5 +28,12 @@ export const dashboardNavigation = [
   { href: "/recap", label: "Rekap & Tindak Lanjut", icon: ListTodo },
   { href: "/schedules", label: "Jadwal", icon: CalendarDays },
   { href: "/documents", label: "Dokumen & Surat", icon: FileText },
+  { href: "/events", label: "Acara", icon: Presentation },
+  { href: "/meetings", label: "Rapat & Keputusan", icon: Users },
+  { href: "/operations/inventory", label: "Inventaris", icon: Archive },
+  { href: "/operations/maintenance", label: "Lapor Kerusakan", icon: Settings },
+  { href: "/operations/duty", label: "Jadwal Piket", icon: CalendarDays },
+  { href: "/portfolios", label: "Portofolio", icon: BriefcaseBusiness },
+  { href: "/connect", label: "Komunikasi", icon: Megaphone },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ] as const;

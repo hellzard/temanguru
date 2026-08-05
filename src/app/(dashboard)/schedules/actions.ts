@@ -13,7 +13,7 @@ const createScheduleSchema = z.object({
   room: z.string().trim().max(100, "Maksimal 100 karakter.").optional(),
 });
 
-export async function createSchedule(formData: FormData) {
+export async function createSchedule(prevState: unknown, formData: FormData) {
   const parsed = createScheduleSchema.safeParse({
     class_id: formData.get("class_id"),
     subject_id: formData.get("subject_id"),

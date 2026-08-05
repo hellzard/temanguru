@@ -9,7 +9,7 @@ const createClassSchema = z.object({
   grade_level: z.string().trim().max(50, "Maksimal 50 karakter.").optional(),
 });
 
-export async function createClass(formData: FormData) {
+export async function createClass(prevState: unknown, formData: FormData) {
   const parsed = createClassSchema.safeParse({
     name: formData.get("name"),
     grade_level: formData.get("grade_level") || undefined,

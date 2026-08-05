@@ -62,34 +62,34 @@ Gunakan `docs/IMPLEMENTATION_WAVES.md` sebagai urutan wajib. Centang hanya setel
 ## Wave 6: Performance, Final Polish & Launch
 
 - [x] Execute comprehensive browser smoke tests (mobile + desktop)
-- [ ] Accessibility audit (WCAG 2.2 AA)
-- [ ] Run `quality-gate` checks
-- [ ] Execute `github-vercel-publish` for deployment
+- [x] Accessibility audit (WCAG 2.2 AA)
+- [x] Run `quality-gate` checks
+- [x] Execute `github-vercel-publish` for deployment
 
 ## Wave 7 — Events and meetings
-- [ ] Event identity, proposal, approval.
-- [ ] Committee/tasks, budget/realisasi.
-- [ ] Attendance, certificate batch, LPJ/archive.
-- [ ] Meeting decisions with PIC/deadline/status.
+- [x] Event identity, proposal, approval.
+- [x] Committee/tasks, budget/realisasi.
+- [x] Attendance, certificate batch, LPJ/archive.
+- [x] Meeting decisions with PIC/deadline/status.
 
 ## Wave 8 — School operations
-- [ ] Inventory QR and loans.
-- [ ] Resource booking/conflict constraints.
-- [ ] Maintenance tickets/history.
-- [ ] Duty schedules/swaps.
+- [x] Inventory QR and loans.
+- [x] Resource booking/conflict constraints.
+- [x] Maintenance tickets/history.
+- [x] Duty schedules/swaps.
 
 ## Wave 9 — Connect and portfolios
-- [ ] Student evidence portfolio.
-- [ ] Teacher professional portfolio.
-- [ ] Parent meeting pack.
-- [ ] Communication composer with copy/open-WhatsApp.
-- [ ] Supervision/coaching workflow.
+- [x] Student evidence portfolio.
+- [x] Teacher professional portfolio.
+- [x] Parent meeting pack.
+- [x] Communication composer with copy/open-WhatsApp.
+- [x] Supervision/coaching workflow.
 
 ## Wave 10 — Hardening and pilot
-- [ ] Share Target progressive enhancement.
-- [ ] Shared-device logout cleanup.
+- [x] Share Target progressive enhancement.
+- [x] Shared-device logout cleanup.
 - [ ] Optional passkeys for sensitive roles.
-- [ ] Accessibility/security/retention review.
+- [x] Accessibility/security/retention review.
 - [ ] Backup and restore drill.
 - [ ] Pilot with 5–10 teachers.
 - [ ] Fix top friction points and publish release notes.

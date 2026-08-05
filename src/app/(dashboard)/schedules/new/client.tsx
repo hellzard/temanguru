@@ -19,7 +19,7 @@ export function CreateScheduleForm({ classes, subjects }: { classes: Record<stri
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     async (prevState: unknown, formData: FormData) => {
-      const res = await createSchedule(formData);
+      const res = await createSchedule(prevState, formData);
       if (res.error) return { error: res.error, success: false };
       router.push("/schedules");
       return { error: null, success: true };

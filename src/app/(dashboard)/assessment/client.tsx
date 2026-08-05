@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Loader2, Plus, FileText, Calendar } from "lucide-react";
 import { createAssessment, getAssessments } from "./actions";
 
@@ -101,13 +102,22 @@ export default function AssessmentClient({ assignments }: { assignments: Assignm
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900">Daftar Penilaian</h2>
-            <button
-              onClick={() => setIsFormOpen(!isFormOpen)}
-              className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
-            >
-              <Plus size={16} />
-              Tambah Penilaian
-            </button>
+            <div className="flex gap-2">
+              <Link
+                href={`/assessment/report/${assignmentId}`}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-indigo-600"
+              >
+                <FileText size={16} />
+                Lihat Rapor
+              </Link>
+              <button
+                onClick={() => setIsFormOpen(!isFormOpen)}
+                className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+              >
+                <Plus size={16} />
+                Tambah Penilaian
+              </button>
+            </div>
           </div>
 
           {errorMsg && (

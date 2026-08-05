@@ -19,15 +19,13 @@ export async function updateSession(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getClaims();
-  const isProtected = request.nextUrl.pathname.startsWith("/onboarding") ||
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/classes") ||
-    request.nextUrl.pathname.startsWith("/attendance") ||
-    request.nextUrl.pathname.startsWith("/journal") ||
-    request.nextUrl.pathname.startsWith("/grades") ||
-    request.nextUrl.pathname.startsWith("/students") ||
-    request.nextUrl.pathname.startsWith("/schedule") ||
-    request.nextUrl.pathname.startsWith("/settings");
+  const protectedPrefixes = [
+    "/onboarding", "/dashboard", "/classes", "/attendance", "/journal",
+    "/grades", "/students", "/schedule", "/schedules", "/settings",
+    "/events", "/meetings", "/operations", "/portfolios", "/connect",
+    "/record", "/recap", "/assessment", "/documents"
+  ];
+  const isProtected = protectedPrefixes.some(prefix => request.nextUrl.pathname.startsWith(prefix));
 
   if (isProtected && !data?.claims) {
     const loginUrl = request.nextUrl.clone();

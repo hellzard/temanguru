@@ -41,7 +41,7 @@ export function ClassList({ classes }: { classes: Record<string, unknown>[] }) {
 
 export function CreateClassForm() {
   const [state, formAction, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
-    const res = await createClass(formData);
+    const res = await createClass(prevState, formData);
     if (res.error) return { error: res.error, success: false };
     return { error: null, success: true };
   }, { error: null, success: false });

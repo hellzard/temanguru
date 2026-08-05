@@ -13,7 +13,7 @@ const createAcademicYearSchema = z.object({
   path: ["ends_on"],
 });
 
-export async function createAcademicYear(formData: FormData) {
+export async function createAcademicYear(prevState: unknown, formData: FormData) {
   const parsed = createAcademicYearSchema.safeParse({
     name: formData.get("name"),
     starts_on: formData.get("starts_on"),
