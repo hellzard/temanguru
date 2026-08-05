@@ -3,6 +3,7 @@ import {
   BookOpen,
   CalendarDays,
   FileCheck2,
+  FileText,
   FileSpreadsheet,
   GraduationCap,
   LayoutDashboard,
@@ -22,5 +23,6 @@ export const dashboardNavigation = [
   { href: "/grades", label: "Buku Nilai", icon: Award },
   { href: "/recap", label: "Rekap & Tindak Lanjut", icon: ListTodo },
   { href: "/schedules", label: "Jadwal", icon: CalendarDays },
+  { href: "/documents", label: "Dokumen & Surat", icon: FileText },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ] as const;

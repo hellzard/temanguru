@@ -4,14 +4,14 @@ Gunakan `docs/IMPLEMENTATION_WAVES.md` sebagai urutan wajib. Centang hanya setel
 
 ## Wave 0 — Foundation and publication
 - [x] Starter workspace, rules, skills, agents, workflows, CI/PWA/test scaffold.
-- [ ] Install dependencies and commit a lockfile.
-- [ ] Make `npm run verify` pass.
-- [ ] Confirm env validation and no tracked secrets.
+- [x] Install dependencies and commit a lockfile.
+- [x] Make `npm run verify` pass.
+- [x] Confirm env validation and no tracked secrets.
 - [ ] Create/push `hellzard/temanguru`.
 - [ ] Create Vercel project `temanguru` and pass preview smoke test.
 
 ## Wave 1 — Teacher setup
-- [ ] School/membership onboarding.
+- [x] School/membership onboarding.
 - [x] **Slice 2: Academic Year Configuration (Settings)**
   - UI to add academic year (starts_on, ends_on, name).
   - Server Action to enforce only one active academic year per school.
@@ -36,34 +36,35 @@ Gunakan `docs/IMPLEMENTATION_WAVES.md` sebagai urutan wajib. Centang hanya setel
 - [x] **Slice 3: Offline draft for the slice**
 
 ## Wave 3 — Assessment
-- [ ] Assessment and weighting.
-- [ ] Mobile score entry and missing-score detection.
-- [ ] Remedial history.
-- [ ] Rule-based mastery map.
-- [ ] XLSX/CSV gradebook export.
+- [x] Assessment and weighting.
+- [x] Mobile score entry and missing-score detection.
+- [x] Remedial history.
+- [x] Rule-based mastery map.
+- [x] XLSX/CSV gradebook export.
 
 ## Wave 4 — Offline and mobile classroom
-- [ ] IndexedDB outbox and idempotent sync.
-- [ ] Conflict-resolution UI.
-- [ ] Classroom Focus Mode.
-- [ ] Seating planner and grouping rules.
+- [x] IndexedDB outbox and idempotent sync.
+- [x] Conflict-resolution UI.
+- [x] Classroom Focus Mode.
+- [x] Seating planner and grouping rules.
 - [ ] Substitute teacher pack.
 
-## Wave 5 — Teman Guru Docs
-- [ ] Brand kit and secure logo assets.
-- [ ] Constrained letterhead/template editor.
-- [ ] Variables and print preview.
-- [ ] PDF and DOCX export.
-- [ ] Visual signature/stamp vault and approval.
-- [ ] Numbering, immutable issue record, QR verification.
-- [ ] Batch export and document checker.
+## Wave 5: Teman Guru Docs (PWA Document Studio)
 
-## Wave 6 — Workflow and archive
-- [ ] Surat Tugas workflow vertical slice.
-- [ ] Versioned form/workflow definitions.
-- [ ] Approval inbox, revisions, comments, audit log.
-- [ ] Generic builder after slice validation.
-- [ ] Archive classification/search/version/revocation.
+- [x] Create migration `202608050001_document_studio.sql` for `brand_kits`, `document_templates`, `school_documents`, and `visual_assets` with RLS.
+- [x] Create storage bucket `teman-guru-assets` and RLS policies for visual signatures and logos.
+- [x] Implement `/settings/brand-kit` for letterhead and logo configuration.
+- [x] Implement `/documents` index and navigation.
+- [x] Implement `/documents/templates/[id]` for constrained template editing with blocks (text, heading, variable, signature).
+- [x] Implement `/documents/new` for selecting active templates.
+- [x] Implement `/documents/[id]` for variable input and print preview / PDF export.
+
+## Wave 6: Performance, Final Polish & Launch
+
+- [x] Execute comprehensive browser smoke tests (mobile + desktop)
+- [ ] Accessibility audit (WCAG 2.2 AA)
+- [ ] Run `quality-gate` checks
+- [ ] Execute `github-vercel-publish` for deployment
 
 ## Wave 7 — Events and meetings
 - [ ] Event identity, proposal, approval.

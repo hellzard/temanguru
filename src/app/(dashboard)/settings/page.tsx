@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { CalendarRange, BookMarked } from "lucide-react";
+import { CalendarRange, BookMarked, Paintbrush } from "lucide-react";
 
 export const metadata = { title: "Pengaturan" };
 
@@ -34,6 +34,20 @@ export default function SettingsPage() {
             <h2 className="text-lg font-bold text-slate-950">Mata Pelajaran</h2>
             <p className="mt-1 text-sm text-slate-600">
               Kelola daftar mata pelajaran yang diajarkan di sekolah.
+            </p>
+          </div>
+        </Link>
+        <Link
+          href="/settings/brand-kit"
+          className="group flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-200 hover:shadow-md"
+        >
+          <span className="grid size-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-700 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+            <Paintbrush size={24} />
+          </span>
+          <div>
+            <h2 className="text-lg font-bold text-slate-950">Brand Kit Sekolah</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Atur logo, warna, dan templat kop surat resmi sekolah.
             </p>
           </div>
         </Link>

@@ -32,7 +32,7 @@ interface TemanGuruDB extends DBSchema {
 
 let dbPromise: Promise<IDBPDatabase<TemanGuruDB>> | null = null;
 
-function getDB() {
+export function getDB() {
   if (typeof window === 'undefined') return null; // No IDB on server
   if (!dbPromise) {
     dbPromise = openDB<TemanGuruDB>('temanguru-db', 1, {
