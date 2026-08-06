@@ -60,15 +60,12 @@ export default function SyncStatus() {
         fd.append("obstacle", record.payload.obstacle);
         fd.append("follow_up", record.payload.follow_up);
 
-        try {
-          await saveClassRecord(fd);
+        const result = await saveClassRecord(null, fd);
+        
+        if (result.error) {
+          await updateOutboxRecord(record.id, { status: "error", error_message: result.error });
+        } else {
           await removeOutboxRecord(record.id);
-        } catch (e: any) {
-          if (e?.message?.includes("NEXT_REDIRECT")) {
-            await removeOutboxRecord(record.id);
-          } else {
-            await updateOutboxRecord(record.id, { status: "error", error_message: "Terjadi kesalahan sinkronisasi" });
-          }
         }
       }
     } finally {
