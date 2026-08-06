@@ -641,11 +641,11 @@ export function WorkspaceApp() {
 
   return (
     <div className="tg-app-shell min-h-dvh lg:flex">
-      <aside className={`tg-surface fixed inset-y-0 left-0 z-50 w-72 border-r p-4 transition-transform lg:sticky lg:top-0 lg:z-20 lg:h-dvh lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex items-center justify-between"><Logo /><button type="button" className="grid size-10 place-items-center rounded-xl lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Tutup menu"><X size={20} /></button></div>
-        <div className="mt-6 rounded-2xl border border-[var(--tg-border)] bg-[var(--tg-surface-muted)] p-4"><p className="text-xs font-bold uppercase tracking-wider tg-muted">Mode perangkat</p><p className="mt-1 truncate font-black" title={workspace.name}>{workspace.name}</p><p className="mt-1 text-xs tg-muted">Data lokal · login opsional</p></div>
-        <nav className="mt-5 space-y-1" aria-label="Navigasi ruang kerja">{navigation.map(({ id, label, icon: Icon }) => <button key={id} type="button" onClick={() => changeView(id)} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold ${view === id ? "bg-[var(--tg-primary)] text-white" : "hover:bg-[var(--tg-surface-muted)]"}`}><Icon size={19} />{label}</button>)}</nav>
-        <div className="absolute bottom-4 left-4 right-4"><Link href="/" className="flex min-h-11 items-center justify-center rounded-xl border border-[var(--tg-border)] text-sm font-bold">Kembali ke beranda</Link></div>
+      <aside className={`tg-surface fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r p-4 transition-transform lg:sticky lg:top-0 lg:z-20 lg:h-dvh lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex shrink-0 items-center justify-between"><Logo /><button type="button" className="grid size-10 place-items-center rounded-xl lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Tutup menu"><X size={20} /></button></div>
+        <div className="mt-6 shrink-0 rounded-2xl border border-[var(--tg-border)] bg-[var(--tg-surface-muted)] p-4"><p className="text-xs font-bold uppercase tracking-wider tg-muted">Mode perangkat</p><p className="mt-1 truncate font-black" title={workspace.name}>{workspace.name}</p><p className="mt-1 text-xs tg-muted">Data lokal · login opsional</p></div>
+        <nav className="mt-5 flex-1 space-y-1 overflow-y-auto pb-4" aria-label="Navigasi ruang kerja">{navigation.map(({ id, label, icon: Icon }) => <button key={id} type="button" onClick={() => changeView(id)} className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold ${view === id ? "bg-[var(--tg-primary)] text-white" : "hover:bg-[var(--tg-surface-muted)]"}`}><Icon size={19} />{label}</button>)}</nav>
+        <div className="mt-4 shrink-0"><Link href="/" className="flex min-h-11 items-center justify-center rounded-xl border border-[var(--tg-border)] text-sm font-bold">Kembali ke beranda</Link></div>
       </aside>
       {mobileOpen ? <button aria-label="Tutup menu" className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden" onClick={() => setMobileOpen(false)} /> : null}
       <div className="min-w-0 flex-1">
