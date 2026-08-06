@@ -80,3 +80,20 @@ export async function saveAssessmentScores(formData: FormData) {
   revalidatePath("/dashboard");
   redirectWithMessage(`/assessment/${assessmentId.data}`, "success", "Nilai berhasil disimpan.");
 }
+
+export async function getAssessments(assignmentId: string) {
+  if (!assignmentId) return [];
+  const context = await requireActiveSchool();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("assessments")
+    .select("id, title, category, assessment_date, max_score, weight")
+    .eq("school_id", context.active.schoolId)
+    .eq("teaching_assignment_id", assignmentId)
+    .order("assessment_date", { ascending: false });
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data;
+}
