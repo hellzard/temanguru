@@ -26,7 +26,8 @@ export function AcademicYearList({ years }: { years: Record<string, unknown>[] }
                 </p>
               </div>
               {!year.is_active && (
-                <form action={async () => { await activateAcademicYear(year.id as string); }}>
+                <form action={activateAcademicYear}>
+                  <input type="hidden" name="id" value={year.id as string} />
                   <Button type="submit" variant="secondary" className="w-full sm:w-auto">
                     <CheckCircle2 className="mr-2" size={16} /> Aktifkan
                   </Button>
