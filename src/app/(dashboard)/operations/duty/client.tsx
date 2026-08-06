@@ -48,7 +48,7 @@ export function DutyClient({ schedules, teachers, isAdmin }: { schedules: Schedu
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Jadwal Piket Guru</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Jadwal Piket Guru</h2>
           <p className="mt-1 text-sm text-slate-500">
             Jadwal guru piket harian dan permohonan pertukaran jadwal.
           </p>
@@ -63,7 +63,7 @@ export function DutyClient({ schedules, teachers, isAdmin }: { schedules: Schedu
 
       {isFormOpen && isAdmin && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-950 mb-4">Input Jadwal Piket</h3>
+          <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 mb-4">Input Jadwal Piket</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
@@ -129,7 +129,7 @@ export function DutyClient({ schedules, teachers, isAdmin }: { schedules: Schedu
           <div className="grid size-12 place-items-center rounded-full bg-slate-100 text-slate-400">
             <CalendarDays size={24} />
           </div>
-          <h3 className="mt-4 font-semibold text-slate-950">Belum ada jadwal piket</h3>
+          <h3 className="mt-4 font-[family-name:var(--font-display)] font-bold tracking-[-0.03em] text-slate-950">Belum ada jadwal piket</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
             Minta admin sekolah untuk mengatur jadwal piket harian di halaman ini.
           </p>
@@ -155,7 +155,7 @@ export function DutyClient({ schedules, teachers, isAdmin }: { schedules: Schedu
                     <UserCheck size={20} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 line-clamp-1">
+                    <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-900 line-clamp-1">
                       {schedule.school_members?.users?.name || schedule.school_members?.users?.email || 'Unknown'}
                     </h3>
                     <p className="text-xs text-slate-500">Guru Piket</p>

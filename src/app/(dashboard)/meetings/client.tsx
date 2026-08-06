@@ -60,7 +60,7 @@ export function MeetingsClient({ meetings, decisions }: { meetings: MeetingItem[
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Rapat & Keputusan</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Rapat & Keputusan</h2>
           <p className="mt-1 text-sm text-slate-500">
             Arsip rapat sekolah dan tindak lanjut keputusan bersama.
           </p>
@@ -75,7 +75,7 @@ export function MeetingsClient({ meetings, decisions }: { meetings: MeetingItem[
 
       {isFormOpen && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-950 mb-4">Jadwalkan Rapat</h3>
+          <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 mb-4">Jadwalkan Rapat</h3>
           <form onSubmit={handleMeetingSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-slate-800">
@@ -135,7 +135,7 @@ export function MeetingsClient({ meetings, decisions }: { meetings: MeetingItem[
           <div className="grid size-12 place-items-center rounded-full bg-slate-100 text-slate-400">
             <Users size={24} />
           </div>
-          <h3 className="mt-4 font-semibold text-slate-950">Belum ada jadwal rapat</h3>
+          <h3 className="mt-4 font-[family-name:var(--font-display)] font-bold tracking-[-0.03em] text-slate-950">Belum ada jadwal rapat</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
             Jadwalkan rapat dan catat hasil keputusannya agar semua guru terinfo.
           </p>
@@ -147,7 +147,7 @@ export function MeetingsClient({ meetings, decisions }: { meetings: MeetingItem[
               <div className="p-6">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-950">{meeting.name}</h3>
+                    <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950">{meeting.name}</h3>
                     <div className="mt-2 flex items-center gap-4 text-sm text-slate-500">
                       <span className="flex items-center">
                         <Users size={16} className="mr-1 text-slate-400" />

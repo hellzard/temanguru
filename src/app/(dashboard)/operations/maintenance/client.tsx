@@ -44,7 +44,7 @@ export function MaintenanceClient({ tickets, items }: { tickets: MaintenanceTick
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Laporan Kerusakan</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Laporan Kerusakan</h2>
           <p className="mt-1 text-sm text-slate-500">
             Laporkan kerusakan sarana prasarana agar segera ditangani oleh tim teknisi/sarpras.
           </p>
@@ -59,7 +59,7 @@ export function MaintenanceClient({ tickets, items }: { tickets: MaintenanceTick
 
       {isFormOpen && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-950 mb-4">Lapor Kerusakan</h3>
+          <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 mb-4">Lapor Kerusakan</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-semibold text-slate-800">
@@ -123,7 +123,7 @@ export function MaintenanceClient({ tickets, items }: { tickets: MaintenanceTick
           <div className="grid size-12 place-items-center rounded-full bg-slate-100 text-slate-400">
             <Wrench size={24} />
           </div>
-          <h3 className="mt-4 font-semibold text-slate-950">Belum ada laporan kerusakan</h3>
+          <h3 className="mt-4 font-[family-name:var(--font-display)] font-bold tracking-[-0.03em] text-slate-950">Belum ada laporan kerusakan</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
             Fasilitas sekolah terpantau aman dan berfungsi dengan baik.
           </p>
@@ -146,7 +146,7 @@ export function MaintenanceClient({ tickets, items }: { tickets: MaintenanceTick
                      ticket.status === 'in_progress' ? 'Sedang Diperbaiki' : 'Selesai Diperbaiki'}
                   </div>
                 </div>
-                <h3 className="mt-4 font-bold text-slate-950 line-clamp-1" title={ticket.title}>{ticket.title}</h3>
+                <h3 className="mt-4 font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 line-clamp-1" title={ticket.title}>{ticket.title}</h3>
                 <p className="mt-1 text-sm text-slate-500 line-clamp-2 min-h-[2.5rem]">
                   {ticket.description || "Tidak ada detail tambahan"}
                 </p>

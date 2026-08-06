@@ -70,7 +70,7 @@ export function PortfoliosClient({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Portofolio & Karya</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Portofolio & Karya</h2>
           <p className="mt-1 text-sm text-slate-500">
             Kumpulan bukti karya murid dan sertifikat pengembangan keprofesian guru.
           </p>
@@ -104,7 +104,7 @@ export function PortfoliosClient({
 
       {isFormOpen && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-950 mb-4">
+          <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 mb-4">
             {activeTab === "student" ? "Tambah Karya Murid" : "Tambah Portofolio Guru"}
           </h3>
           
@@ -248,7 +248,7 @@ export function PortfoliosClient({
             <div className="grid size-12 place-items-center rounded-full bg-indigo-50 text-indigo-500">
               <GraduationCap size={24} />
             </div>
-            <h3 className="mt-4 font-semibold text-slate-950">Belum ada karya murid</h3>
+            <h3 className="mt-4 font-[family-name:var(--font-display)] font-bold tracking-[-0.03em] text-slate-950">Belum ada karya murid</h3>
             <p className="mt-1 max-w-sm text-sm text-slate-500">
               Kumpulkan bukti fisik maupun digital hasil belajar murid untuk persiapan presentasi konseling/rapor.
             </p>
@@ -284,7 +284,7 @@ export function PortfoliosClient({
             <div className="grid size-12 place-items-center rounded-full bg-emerald-50 text-emerald-500">
               <BriefcaseBusiness size={24} />
             </div>
-            <h3 className="mt-4 font-semibold text-slate-950">Belum ada portofolio guru</h3>
+            <h3 className="mt-4 font-[family-name:var(--font-display)] font-bold tracking-[-0.03em] text-slate-950">Belum ada portofolio guru</h3>
             <p className="mt-1 max-w-sm text-sm text-slate-500">
               Simpan bukti Pengembangan Keprofesian Berkelanjutan (PKB) Anda di sini agar mudah ditemukan.
             </p>

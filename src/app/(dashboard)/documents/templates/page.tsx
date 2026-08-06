@@ -68,7 +68,7 @@ export default async function TemplatesPage() {
                       <LayoutTemplate size={20} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900">{tpl.name as string}</h3>
+                      <h3 className="text-sm font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-900">{tpl.name as string}</h3>
                       <p className="mt-1 text-xs text-slate-500">
                         {(tpl.category as string) || "Tanpa Kategori"} • Diperbarui {new Date(tpl.updated_at as string).toLocaleDateString("id-ID")}
                       </p>
@@ -88,7 +88,7 @@ export default async function TemplatesPage() {
         ) : (
           <div className="py-16 text-center">
             <LayoutTemplate className="mx-auto size-12 text-slate-300" />
-            <h3 className="mt-4 text-sm font-bold text-slate-900">Belum ada templat</h3>
+            <h3 className="mt-4 text-sm font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-900">Belum ada templat</h3>
             <p className="mt-1 text-sm text-slate-500">Buat templat pertama Anda untuk menstandarkan dokumen sekolah.</p>
           </div>
         )}

@@ -9,7 +9,7 @@ import { CheckCircle2 } from "lucide-react";
 export function AcademicYearList({ years }: { years: Record<string, unknown>[] }) {
   return (
     <div className="mt-8 space-y-4">
-      <h2 className="text-lg font-bold text-slate-950">Daftar Tahun Ajaran</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Daftar Tahun Ajaran</h2>
       {years.length === 0 ? (
         <p className="text-sm text-slate-500">Belum ada tahun ajaran. Silakan tambah baru.</p>
       ) : (
@@ -18,7 +18,7 @@ export function AcademicYearList({ years }: { years: Record<string, unknown>[] }
             <div key={year.id as string} className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="flex items-center gap-3">
-                  <h3 className="font-bold text-slate-950">{year.name as string}</h3>
+                  <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950">{year.name as string}</h3>
                   {year.is_active ? <Badge tone="success">Aktif</Badge> : null}
                 </div>
                 <p className="mt-1 text-sm text-slate-600">
@@ -54,7 +54,7 @@ export function CreateAcademicYearForm() {
 
   return (
     <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
-      <h2 className="text-lg font-bold text-slate-950">Tambah Tahun Ajaran</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Tambah Tahun Ajaran</h2>
       <p className="mt-1 text-sm text-slate-600">Buat periode baru untuk kelas dan penilaian.</p>
       
       {state.error && (

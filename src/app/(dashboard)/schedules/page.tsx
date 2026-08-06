@@ -29,7 +29,7 @@ export default async function SchedulesPage() {
       <div>
         <PageHeader title="Jadwal Mengajar" description="Kelola jadwal mingguan Anda." />
         <div className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
-          <h2 className="text-lg font-bold">Tahun Ajaran Belum Diatur</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Tahun Ajaran Belum Diatur</h2>
           <p className="mt-2 text-sm text-amber-800">
             Anda harus memiliki setidaknya satu Tahun Ajaran aktif untuk melihat atau membuat jadwal.
           </p>

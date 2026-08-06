@@ -30,7 +30,7 @@ export default function SyncStatus() {
     
     // Custom event to refresh when new drafts are added
     window.addEventListener("sync-status-changed", checkPending);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     checkPending();
 
     return () => {

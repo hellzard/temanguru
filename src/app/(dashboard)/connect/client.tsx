@@ -40,7 +40,7 @@ export function ConnectClient({ students }: { students: StudentItem[] }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Komunikasi & Orang Tua</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Komunikasi & Orang Tua</h2>
           <p className="mt-1 text-sm text-slate-500">
             Kirim pesan instan via WhatsApp dan siapkan materi pertemuan orang tua.
           </p>
@@ -73,7 +73,7 @@ export function ConnectClient({ students }: { students: StudentItem[] }) {
               <MessageSquare size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-950">Komposer WhatsApp</h3>
+              <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950">Komposer WhatsApp</h3>
               <p className="text-sm text-slate-500">Buat pesan otomatis untuk orang tua murid</p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export function ConnectClient({ students }: { students: StudentItem[] }) {
               <Users size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-950">Persiapan Pertemuan Wali (Konseling/Rapor)</h3>
+              <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950">Persiapan Pertemuan Wali (Konseling/Rapor)</h3>
               <p className="text-sm text-slate-500">Rangkuman data siswa dalam satu halaman</p>
             </div>
           </div>

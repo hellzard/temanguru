@@ -44,7 +44,7 @@ export function TemplateEditorClient({ initialData }: { initialData: TemplateDat
       <div className="flex-1 space-y-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">Pengaturan Utama</h2>
+            <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-900">Pengaturan Utama</h2>
             <button
               onClick={save}
               disabled={isPending}
@@ -79,7 +79,7 @@ export function TemplateEditorClient({ initialData }: { initialData: TemplateDat
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Blok Dokumen</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-900 mb-4">Blok Dokumen</h2>
           
           <div className="space-y-4">
             {blocks.map((block) => (
@@ -157,7 +157,7 @@ export function TemplateEditorClient({ initialData }: { initialData: TemplateDat
         <div className="sticky top-6 rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-6 text-slate-500">
             <FileText size={20} />
-            <h2 className="text-sm font-bold uppercase tracking-wider">Pratinjau Dokumen</h2>
+            <h2 className="text-sm font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] uppercase tracking-wider">Pratinjau Dokumen</h2>
           </div>
           
           <div className="bg-white p-8 rounded-lg shadow-sm min-h-[500px] border border-slate-200">
@@ -169,7 +169,7 @@ export function TemplateEditorClient({ initialData }: { initialData: TemplateDat
               {blocks.map(block => (
                 <div key={block.id as string}>
                   {block.type === 'text' && <p className="text-slate-800 text-justify leading-relaxed whitespace-pre-wrap">{(block.content as string) || "[Teks Kosong]"}</p>}
-                  {block.type === 'heading' && <h3 className="font-bold text-lg text-center">{(block.content as string) || "[Judul Kosong]"}</h3>}
+                  {block.type === 'heading' && <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-lg text-center">{(block.content as string) || "[Judul Kosong]"}</h3>}
                   {block.type === 'variable' && <span className="inline-block bg-amber-100 text-amber-800 font-mono text-sm px-2 py-0.5 rounded">{`{{${(block.name as string) || "variabel"}}}`}</span>}
                   {block.type === 'signature' && (
                     <div className="mt-8 flex justify-end">

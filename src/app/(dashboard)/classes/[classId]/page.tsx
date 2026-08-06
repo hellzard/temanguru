@@ -47,7 +47,7 @@ export default async function ClassDetailPage({
       <div className="mt-6"><FormMessage error={firstParam(query.error)} success={firstParam(query.success)} /></div>
       <section className="mt-6 grid gap-6 xl:grid-cols-[.72fr_1.28fr]">
         <div className="tg-card p-5">
-          <h2 className="font-bold">Tambah murid</h2>
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Tambah murid</h2>
           <p className="mt-1 text-sm tg-muted">Kode lokal membantu mencegah duplikat saat impor.</p>
           <form action={addStudentToClass} className="mt-5 space-y-4">
             <input type="hidden" name="class_id" value={classId} />
@@ -57,7 +57,7 @@ export default async function ClassDetailPage({
           </form>
           <Link href={`/classes/${classId}/import`} className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--tg-border)] px-4 font-bold"><FileUp size={17} />Impor CSV</Link>
         </div>
-        <div>{students.length ? <div className="grid gap-3 sm:grid-cols-2">{students.map((student) => student ? <article key={String(student.id)} className="tg-card flex items-center gap-3 p-4"><span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><UserRound size={20} /></span><div className="min-w-0"><h2 className="truncate font-bold">{String(student.display_name)}</h2><p className="truncate text-sm tg-muted">{student.local_code ? `Kode ${student.local_code}` : "Tanpa kode lokal"}</p></div></article> : null)}</div> : <EmptyState icon={UserRound} title="Kelas belum memiliki murid" description="Tambah manual atau impor file CSV dengan kolom nama dan kode." />}</div>
+        <div>{students.length ? <div className="grid gap-3 sm:grid-cols-2">{students.map((student) => student ? <article key={String(student.id)} className="tg-card flex items-center gap-3 p-4"><span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><UserRound size={20} /></span><div className="min-w-0"><h2 className="truncate font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">{String(student.display_name)}</h2><p className="truncate text-sm tg-muted">{student.local_code ? `Kode ${student.local_code}` : "Tanpa kode lokal"}</p></div></article> : null)}</div> : <EmptyState icon={UserRound} title="Kelas belum memiliki murid" description="Tambah manual atau impor file CSV dengan kolom nama dan kode." />}</div>
       </section>
     </div>
   );

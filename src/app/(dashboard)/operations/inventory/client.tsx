@@ -60,7 +60,7 @@ export function InventoryClient({
         <section className="tg-card p-5">
           <div className="flex items-center gap-3">
             <PackagePlus className="text-[var(--tg-primary)]" size={21} />
-            <h2 className="font-bold">Tambah barang</h2>
+            <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Tambah barang</h2>
           </div>
           <form
             className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-6"
@@ -106,7 +106,7 @@ export function InventoryClient({
                   </span>
                   <StatusPill value={String(item.condition)} />
                 </div>
-                <h2 className="mt-4 font-bold">{String(item.name)}</h2>
+                <h2 className="mt-4 font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">{String(item.name)}</h2>
                 <p className="mt-1 text-sm tg-muted">
                   {String(item.code)} · {String(item.location ?? "Lokasi belum diisi")}
                 </p>

@@ -9,7 +9,7 @@ import { GraduationCap } from "lucide-react";
 export function ClassList({ classes }: { classes: Record<string, unknown>[] }) {
   return (
     <div className="mt-8 space-y-4">
-      <h2 className="text-lg font-bold text-slate-950">Daftar Kelas</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Daftar Kelas</h2>
       {classes.length === 0 ? (
         <p className="text-sm text-slate-500">Belum ada kelas di tahun ajaran ini. Silakan tambah baru.</p>
       ) : (
@@ -25,7 +25,7 @@ export function ClassList({ classes }: { classes: Record<string, unknown>[] }) {
                   <GraduationCap size={24} />
                 </span>
                 <div>
-                  <h3 className="font-bold text-slate-950">{cls.name as string}</h3>
+                  <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950">{cls.name as string}</h3>
                   <p className="text-sm text-slate-500">
                     {cls.grade_level ? `Tingkat: ${cls.grade_level as string}` : "Tidak ada tingkat"}
                   </p>
@@ -52,7 +52,7 @@ export function CreateClassForm() {
 
   return (
     <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
-      <h2 className="text-lg font-bold text-slate-950">Tambah Kelas</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Tambah Kelas</h2>
       <p className="mt-1 text-sm text-slate-600">Buat kelas baru untuk diisi dengan murid.</p>
       
       {state.error && (

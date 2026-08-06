@@ -40,7 +40,7 @@ export default async function AttendancePage() {
                   <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><ClipboardCheck size={21} /></span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-bold">{relationText(assignment?.classes, "name", "Kelas")} · {relationText(assignment?.subjects, "name", "Mata pelajaran")}</h2>
+                      <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">{relationText(assignment?.classes, "name", "Kelas")} · {relationText(assignment?.subjects, "name", "Mata pelajaran")}</h2>
                       <StatusPill value={String(row.state)} />
                     </div>
                     <p className="mt-1 text-sm tg-muted">{formatDate(String(row.session_date), { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>

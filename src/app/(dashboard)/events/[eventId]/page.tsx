@@ -92,7 +92,7 @@ export default async function EventDetailPage({
         <section>
           <div className="flex items-center gap-2">
             <ListTodo size={20} className="text-[var(--tg-primary)]" />
-            <h2 className="text-lg font-bold">Tugas acara</h2>
+            <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Tugas acara</h2>
           </div>
 
           {tasks.length ? (
@@ -104,7 +104,7 @@ export default async function EventDetailPage({
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-bold">{String(task.title)}</h3>
+                          <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em]">{String(task.title)}</h3>
                           <StatusPill value={String(task.status)} />
                         </div>
                         <p className="mt-1 text-sm tg-muted">
@@ -135,7 +135,7 @@ export default async function EventDetailPage({
           {canManage ? (
             <form action={createEventTask} className="tg-card mt-4 space-y-3 p-5">
               <input type="hidden" name="event_id" value={eventId} />
-              <h3 className="font-bold">Tambah tugas</h3>
+              <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em]">Tambah tugas</h3>
               <input name="title" required placeholder="Judul tugas" className="min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" />
               <select name="assignee_id" className="min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3">
                 <option value="">Belum ada PIC</option>
@@ -151,13 +151,13 @@ export default async function EventDetailPage({
         <section>
           <div className="flex items-center gap-2">
             <BadgeDollarSign size={20} className="text-[var(--tg-primary)]" />
-            <h2 className="text-lg font-bold">Anggaran</h2>
+            <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Anggaran</h2>
           </div>
           {budgets.length ? (
             <div className="mt-4 space-y-3">
               {budgets.map((budget) => (
                 <article key={String(budget.id)} className="tg-card p-5">
-                  <h3 className="font-bold">{String(budget.category)}</h3>
+                  <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em]">{String(budget.category)}</h3>
                   <p className="mt-1 text-sm tg-muted">Rencana {formatCurrency(String(budget.planned_amount))} · Realisasi {formatCurrency(String(budget.actual_amount))}</p>
                   {budget.description ? <p className="mt-3 text-sm">{String(budget.description)}</p> : null}
                 </article>
@@ -170,7 +170,7 @@ export default async function EventDetailPage({
           {canManage ? (
             <form action={createEventBudget} className="tg-card mt-4 space-y-3 p-5">
               <input type="hidden" name="event_id" value={eventId} />
-              <h3 className="font-bold">Tambah anggaran</h3>
+              <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em]">Tambah anggaran</h3>
               <input name="category" required placeholder="Kategori" className="min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" />
               <div className="grid gap-3 sm:grid-cols-2">
                 <input type="number" min="0" name="planned_amount" placeholder="Rencana" className="min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" />

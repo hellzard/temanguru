@@ -29,7 +29,7 @@ export function CreateScheduleForm({ classes, subjects }: { classes: Record<stri
 
   return (
     <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 max-w-2xl">
-      <h2 className="text-lg font-bold text-slate-950">Detail Jadwal Mengajar</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Detail Jadwal Mengajar</h2>
       
       {state.error && (
         <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{state.error}</p>

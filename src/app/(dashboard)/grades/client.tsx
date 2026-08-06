@@ -212,7 +212,7 @@ export default function GradebookClient({ assignments }: { assignments: Assignme
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="border-b border-slate-200 bg-slate-50/50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Peta Penguasaan (Mastery Map)</h2>
+              <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-900">Peta Penguasaan (Mastery Map)</h2>
               <p className="text-sm text-slate-500 mt-1">
                 Distribusi nilai siswa berdasarkan KKM {kkm} dan Batas Mahir {mahirThreshold}.
               </p>

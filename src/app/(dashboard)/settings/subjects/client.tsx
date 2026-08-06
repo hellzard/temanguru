@@ -8,7 +8,7 @@ import { BookMarked } from "lucide-react";
 export function SubjectList({ subjects }: { subjects: Record<string, unknown>[] }) {
   return (
     <div className="mt-8 space-y-4">
-      <h2 className="text-lg font-bold text-slate-950">Daftar Mata Pelajaran</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Daftar Mata Pelajaran</h2>
       {subjects.length === 0 ? (
         <p className="text-sm text-slate-500">Belum ada mata pelajaran. Silakan tambah baru.</p>
       ) : (
@@ -22,7 +22,7 @@ export function SubjectList({ subjects }: { subjects: Record<string, unknown>[] 
                 <BookMarked size={20} />
               </span>
               <div>
-                <h3 className="font-bold text-slate-950 truncate max-w-[200px]" title={sub.name as string}>
+                <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 truncate max-w-[200px]" title={sub.name as string}>
                   {sub.name as string}
                 </h3>
                 <p className="text-sm text-slate-500">
@@ -53,7 +53,7 @@ export function CreateSubjectForm() {
 
   return (
     <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
-      <h2 className="text-lg font-bold text-slate-950">Tambah Mata Pelajaran</h2>
+      <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Tambah Mata Pelajaran</h2>
       <p className="mt-1 text-sm text-slate-600">
         Mata pelajaran ini dapat dipilih saat membuat jadwal mengajar.
       </p>

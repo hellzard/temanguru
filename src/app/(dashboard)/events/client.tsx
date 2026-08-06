@@ -38,7 +38,7 @@ export function EventsClient({ events }: { events: EventItem[] }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Acara Sekolah</h2>
+          <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">Acara Sekolah</h2>
           <p className="mt-1 text-sm text-slate-500">
             Daftar acara, jadwal kegiatan, dan kepanitiaan.
           </p>
@@ -53,7 +53,7 @@ export function EventsClient({ events }: { events: EventItem[] }) {
 
       {isFormOpen && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-950 mb-4">Buat Acara Baru</h3>
+          <h3 className="text-lg font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 mb-4">Buat Acara Baru</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-slate-800">
@@ -125,7 +125,7 @@ export function EventsClient({ events }: { events: EventItem[] }) {
           <div className="grid size-12 place-items-center rounded-full bg-slate-100 text-slate-400">
             <Presentation size={24} />
           </div>
-          <h3 className="mt-4 font-semibold text-slate-950">Belum ada acara</h3>
+          <h3 className="mt-4 font-[family-name:var(--font-display)] font-bold tracking-[-0.03em] text-slate-950">Belum ada acara</h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500">
             Jadwalkan kegiatan besar sekolah dan kelola kepanitiaan di sini.
           </p>
@@ -155,7 +155,7 @@ export function EventsClient({ events }: { events: EventItem[] }) {
                     {evt.status ? evt.status.charAt(0).toUpperCase() + evt.status.slice(1) : ''}
                   </span>
                 </div>
-                <h3 className="mt-4 font-bold text-slate-950 line-clamp-1">{evt.name}</h3>
+                <h3 className="mt-4 font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-950 line-clamp-1">{evt.name}</h3>
                 <p className="mt-1 text-sm text-slate-500 line-clamp-2 min-h-10">
                   {evt.description || "Tidak ada deskripsi"}
                 </p>

@@ -35,7 +35,7 @@ export default async function JournalPage() {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                     <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><BookOpenText size={21} /></span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2"><h2 className="text-lg font-bold">{String(row.topic)}</h2><StatusPill value={String(row.state)} /></div>
+                      <div className="flex flex-wrap items-center gap-2"><h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">{String(row.topic)}</h2><StatusPill value={String(row.state)} /></div>
                       <p className="mt-1 text-sm tg-muted">{relationText(assignment?.classes, "name", "Kelas")} · {relationText(assignment?.subjects, "name", "Mata pelajaran")} · {formatDate(String(row.journal_date))}</p>
                       {row.activity_summary ? <p className="mt-4 whitespace-pre-wrap text-sm leading-6">{String(row.activity_summary)}</p> : null}
                       <dl className="mt-4 grid gap-3 md:grid-cols-3">

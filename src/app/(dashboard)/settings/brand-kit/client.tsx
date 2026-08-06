@@ -43,7 +43,7 @@ export function BrandKitClient({ initialData, signedLogoUrl }: { initialData: Br
       <input type="hidden" name="current_logo_url" value={initialData?.logo_url || ""} />
       
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
+        <h2 className="flex items-center gap-2 text-xl font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-900">
           <ImageIcon className="text-indigo-600" /> Logo & Warna
         </h2>
         
@@ -90,7 +90,7 @@ export function BrandKitClient({ initialData, signedLogoUrl }: { initialData: Br
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
+        <h2 className="flex items-center gap-2 text-xl font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-900">
           <Paintbrush className="text-indigo-600" /> Pengaturan Kop Surat
         </h2>
         

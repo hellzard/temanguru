@@ -56,7 +56,7 @@ export default async function NewDocumentPage() {
                 <ArrowRight size={20} className="text-slate-300 group-hover:text-indigo-600 transition-colors" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-950">{tpl.name}</h2>
+                <h2 className="text-lg font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em] text-slate-950">{tpl.name}</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   {tpl.category || "Dokumen Umum"}
                 </p>
@@ -68,7 +68,7 @@ export default async function NewDocumentPage() {
         {(!templates || templates.length === 0) && (
           <div className="col-span-full py-12 text-center rounded-3xl border border-slate-200 bg-white shadow-sm">
             <FileText className="mx-auto size-12 text-slate-300" />
-            <h3 className="mt-4 text-sm font-bold text-slate-900">Belum ada templat aktif</h3>
+            <h3 className="mt-4 text-sm font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-900">Belum ada templat aktif</h3>
             <p className="mt-1 text-sm text-slate-500">Admin sekolah belum mengaktifkan templat dokumen apa pun.</p>
           </div>
         )}

@@ -161,7 +161,7 @@ export default function RecapClient({
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
               <div className="mb-3 flex items-center gap-2 text-amber-800">
                 <AlertTriangle size={18} />
-                <h3 className="font-bold">Perlu Perhatian (Tindak Lanjut & Hambatan)</h3>
+                <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em]">Perlu Perhatian (Tindak Lanjut & Hambatan)</h3>
               </div>
               <ul className="space-y-3">
                 {followUps.map(j => (
@@ -178,7 +178,7 @@ export default function RecapClient({
           {/* Table Data */}
           <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
             <div className="border-b border-slate-200 p-4 flex justify-between items-center bg-slate-50/50">
-              <h3 className="font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="font-[family-name:var(--font-display)] font-extrabold tracking-[-0.03em] text-slate-900 flex items-center gap-2">
                 <FileText size={18} className="text-indigo-600" />
                 Data Jurnal & Presensi
               </h3>

@@ -36,7 +36,7 @@ export default async function ClassesPage({
       <div className="mt-7 grid gap-6 xl:grid-cols-[.7fr_1.3fr]">
         {canManage ? (
           <section className="tg-card p-5">
-            <h2 className="font-bold">Tambah kelas</h2>
+            <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Tambah kelas</h2>
             <form action={createClass} className="mt-5 space-y-4">
               <FormMessage error={firstParam(params.error)} success={firstParam(params.success)} />
               <label className="block text-sm font-bold">Tahun ajaran<select name="academic_year_id" required className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3"><option value="">Pilih tahun</option>{yearRows.map((year) => <option key={String(year.id)} value={String(year.id)}>{String(year.name)}{year.is_active ? " · aktif" : ""}</option>)}</select></label>
@@ -55,7 +55,7 @@ export default async function ClassesPage({
                 return (
                   <Link key={String(row.id)} href={`/classes/${String(row.id)}`} className="tg-card p-5 transition hover:-translate-y-0.5 hover:border-[var(--tg-primary)]">
                     <div className="flex items-center justify-between"><span className="grid size-11 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><GraduationCap size={21} /></span><span className="text-sm font-bold tg-muted">{counts?.[0]?.count ?? 0} murid</span></div>
-                    <h2 className="mt-4 font-bold">{String(row.name)}</h2>
+                    <h2 className="mt-4 font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">{String(row.name)}</h2>
                     <p className="mt-1 text-sm tg-muted">Tahun {relationText(row.academic_years, "name", "—")}{row.grade_level ? ` · Tingkat ${String(row.grade_level)}` : ""}</p>
                   </Link>
                 );

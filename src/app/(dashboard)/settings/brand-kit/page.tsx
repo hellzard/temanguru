@@ -21,7 +21,7 @@ export default async function BrandKitPage({ searchParams }: { searchParams: Pro
     <div className="mx-auto max-w-4xl">
       <PageHeader title="Brand Kit Sekolah" description="Identitas ini digunakan sebagai sumber data dokumen sekolah. Logo, tanda tangan, dan stempel tetap disimpan di bucket privat." />
       <section className="tg-card mt-7 p-5 sm:p-7">
-        <div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><Paintbrush size={21} /></span><div><h2 className="font-bold">Identitas dokumen</h2><p className="text-sm tg-muted">Tidak mengubah nama sekolah pada keanggotaan.</p></div></div>
+        <div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><Paintbrush size={21} /></span><div><h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.035em]">Identitas dokumen</h2><p className="text-sm tg-muted">Tidak mengubah nama sekolah pada keanggotaan.</p></div></div>
         <form action={saveBrandKit} className="mt-6 grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2"><FormMessage error={firstParam(params.error)} success={firstParam(params.success)} /></div>
           <label className="block text-sm font-bold">Nama pada dokumen<input name="school_name" defaultValue={data?.school_name ?? context.active.schoolName} disabled={!canManage} className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3 disabled:opacity-70" /></label>
