@@ -1,0 +1,131 @@
+/*
+  Teman Guru — UI Overhaul Layer
+  Import after globals.css in src/app/layout.tsx.
+*/
+
+:root {
+  --font-display: var(--font-manrope, var(--font-inter), sans-serif);
+  --tg-marketing-max: 1400px;
+  --tg-radius-2xl: 2.25rem;
+  --tg-shadow-float: 0 26px 80px -42px color-mix(in srgb, var(--tg-text) 55%, transparent);
+}
+
+body {
+  background:
+    radial-gradient(circle at 14% -8%, color-mix(in srgb, var(--tg-primary) 13%, transparent), transparent 31rem),
+    radial-gradient(circle at 96% 14%, color-mix(in srgb, #14b8a6 10%, transparent), transparent 28rem),
+    var(--tg-app-gradient);
+}
+
+.tg-marketing-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.tg-hero-grid {
+  opacity: 0.55;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--tg-primary) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--tg-primary) 7%, transparent) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.tg-bento-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--tg-border);
+  border-radius: 1.7rem;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--tg-surface) 96%, transparent),
+      color-mix(in srgb, var(--tg-primary) 3%, var(--tg-surface))
+    );
+  box-shadow: var(--tg-shadow-sm);
+  transition:
+    transform 260ms var(--tg-ease),
+    border-color 260ms var(--tg-ease),
+    box-shadow 260ms var(--tg-ease);
+}
+
+.tg-bento-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -55% 28%;
+  height: 68%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tg-primary) 11%, transparent);
+  filter: blur(45px);
+  pointer-events: none;
+  transition: transform 500ms var(--tg-ease), opacity 300ms ease;
+  opacity: 0.65;
+}
+
+.tg-bento-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--tg-primary) 28%, var(--tg-border));
+  box-shadow: var(--tg-shadow-float);
+}
+
+.tg-bento-card:hover::after {
+  transform: translate(-7%, -8%) scale(1.1);
+  opacity: 0.95;
+}
+
+/* Make app surfaces calmer: hierarchy comes from layout, not glow everywhere. */
+.tg-app-shell .tg-card {
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--tg-text) 4%, transparent),
+    0 14px 38px -32px color-mix(in srgb, var(--tg-text) 34%, transparent);
+}
+
+.tg-app-shell .tg-card-interactive:hover {
+  transform: translateY(-2px);
+}
+
+.tg-app-shell > aside {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--tg-surface) 92%, transparent),
+      color-mix(in srgb, var(--tg-surface-muted) 88%, transparent)
+    );
+}
+
+.tg-nav-item {
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+}
+
+.tg-nav-item[data-active="true"] {
+  border-color: color-mix(in srgb, var(--tg-primary) 15%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 50%, transparent);
+}
+
+.tg-nav-item[data-active="true"]::before {
+  left: 5px;
+  height: 42%;
+  width: 3px;
+}
+
+@media (max-width: 639px) {
+  .tg-hero-grid {
+    background-size: 34px 34px;
+  }
+
+  .tg-bento-card {
+    min-height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tg-bento-card,
+  .tg-bento-card::after {
+    transition: none !important;
+  }
+
+  .tg-bento-card:hover {
+    transform: none;
+  }
+}

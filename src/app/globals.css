@@ -10,14 +10,14 @@
    ========================================================================== */
 
 :root {
-  --background: #f7f8fc;
+  --background: #f6f7fb;
   --surface: #ffffff;
   --text: #172033;
   --text-muted: #667085;
   --primary: #4f46e5;
   --border: #e4e7ec;
 
-  --tg-background: #f7f8fc;
+  --tg-background: #f6f7fb;
   --tg-surface: #ffffff;
   --tg-surface-muted: #f8fafc;
   --tg-surface-alpha: rgba(255, 255, 255, 0.9);
