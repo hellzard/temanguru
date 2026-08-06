@@ -34,12 +34,11 @@ export function MeetingsClient({ meetings, decisions }: { meetings: MeetingItem[
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransitionMeeting(async () => {
-      const result = await createMeeting(initialMeetingState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
+      try {
+        await createMeeting(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };
@@ -48,12 +47,11 @@ export function MeetingsClient({ meetings, decisions }: { meetings: MeetingItem[
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransitionDecision(async () => {
-      const result = await createMeetingDecision(initialDecisionState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setActiveMeeting(null);
-      } else {
-        toast.error(result.message);
+      try {
+        await createMeetingDecision(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };

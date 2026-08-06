@@ -44,12 +44,11 @@ export function PortfoliosClient({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransitionStudent(async () => {
-      const result = await createStudentPortfolio(initialStudentState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
+      try {
+        await createStudentPortfolio(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };
@@ -58,12 +57,11 @@ export function PortfoliosClient({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransitionTeacher(async () => {
-      const result = await createTeacherPortfolio(initialTeacherState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
+      try {
+        await createTeacherPortfolio(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };
