@@ -42,9 +42,13 @@ export function AcademicYearList({ years }: { years: Record<string, unknown>[] }
 
 export function CreateAcademicYearForm() {
   const [state, formAction, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
-    const res = await createAcademicYear(prevState, formData);
-    if (res.error) return { error: res.error, success: false };
-    return { error: null, success: true };
+    try {
+      await createAcademicYear(formData);
+      return { error: null, success: true };
+    } catch (e: any) {
+      if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+      return { error: "Terjadi kesalahan", success: false };
+    }
   }, { error: null, success: false });
 
   return (

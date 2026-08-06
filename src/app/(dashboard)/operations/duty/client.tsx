@@ -29,12 +29,11 @@ export function DutyClient({ schedules, teachers, isAdmin }: { schedules: Schedu
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result = await createDutySchedule(initialState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
+      try {
+        await createDutySchedule(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };

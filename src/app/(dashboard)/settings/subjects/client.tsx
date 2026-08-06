@@ -40,9 +40,13 @@ export function SubjectList({ subjects }: { subjects: Record<string, unknown>[] 
 export function CreateSubjectForm() {
   const [state, formAction, isPending] = useActionState(
     async (prevState: unknown, formData: FormData) => {
-      const res = await createSubject(prevState, formData);
-      if (res.error) return { error: res.error, success: false };
+      try {
+      await createSubject(formData);
       return { error: null, success: true };
+    } catch (e: any) {
+      if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+      return { error: "Terjadi kesalahan", success: false };
+    }
     },
     { error: null, success: false }
   );

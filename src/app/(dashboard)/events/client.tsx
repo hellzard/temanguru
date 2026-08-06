@@ -25,12 +25,11 @@ export function EventsClient({ events }: { events: EventItem[] }) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result = await createEvent(initialState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
+      try {
+        await createEvent(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };
