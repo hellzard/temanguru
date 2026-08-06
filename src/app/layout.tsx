@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { OfflineBanner } from "@/components/offline-banner";
 import { PwaRegistrar } from "@/components/pwa-registrar";
 import { ThemeBootstrapScript } from "@/components/theme/theme-bootstrap-script";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -45,7 +48,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning className={inter.variable}>
       <body>
         <ThemeBootstrapScript />
         <ThemeProvider>

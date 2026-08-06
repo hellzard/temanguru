@@ -13,9 +13,9 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="tg-card grid min-h-56 place-items-center p-8 text-center">
+    <div className="tg-animate-scale-in grid min-h-56 place-items-center rounded-[var(--tg-radius-lg)] border border-dashed border-[var(--tg-border)] bg-[var(--tg-surface-muted)] p-8 text-center">
       <div>
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]">
+        <span className="tg-float mx-auto grid size-14 place-items-center rounded-2xl bg-[var(--tg-primary-soft)] text-[var(--tg-primary)]">
           <Icon size={26} aria-hidden="true" />
         </span>
         <h3 className="mt-4 text-lg font-bold">{title}</h3>

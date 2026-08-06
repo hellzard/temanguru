@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Teman Guru — Design Tokens
+   "Aurora Glass": soft ambient gradients + frosted glass surfaces that stay
+   fully compatible with the existing dynamic theme system (ThemeProvider /
+   THEME_PRESETS). Every new token below derives from the same --tg-primary /
+   --tg-ring variables the presets already control, so all 16 presets and
+   dark mode keep working without touching the theme engine.
+   ========================================================================== */
+
 :root {
   --background: #f7f8fc;
   --surface: #ffffff;
@@ -26,6 +35,30 @@
   --tg-wallpaper-position: center;
   --tg-wallpaper-repeat: no-repeat;
   --tg-glass-blur: 6px;
+
+  /* --- new tokens: derived, theme-aware --- */
+  --tg-primary-soft: color-mix(in srgb, var(--tg-primary) 12%, transparent);
+  --tg-primary-softer: color-mix(in srgb, var(--tg-primary) 6%, transparent);
+  --tg-primary-strong: color-mix(in srgb, var(--tg-primary) 85%, #000 15%);
+  --tg-accent: var(--tg-ring);
+
+  --tg-radius-sm: 0.75rem;
+  --tg-radius-md: 1.1rem;
+  --tg-radius-lg: 1.5rem;
+  --tg-radius-xl: 2rem;
+
+  --tg-shadow-sm: 0 1px 2px color-mix(in srgb, var(--tg-text) 6%, transparent);
+  --tg-shadow-md: 0 12px 34px color-mix(in srgb, var(--tg-text) 7%, transparent);
+  --tg-shadow-lg: 0 24px 60px -12px color-mix(in srgb, var(--tg-text) 22%, transparent);
+  --tg-shadow-glow: 0 10px 30px -8px color-mix(in srgb, var(--tg-primary) 55%, transparent);
+  --tg-shadow-glow-lg: 0 22px 50px -12px color-mix(in srgb, var(--tg-primary) 60%, transparent);
+
+  --tg-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --tg-duration-fast: 160ms;
+  --tg-duration: 240ms;
+  --tg-duration-slow: 480ms;
+
+  --font-sans: var(--font-inter, "Inter"), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 :root[data-theme-mode="dark"] {
@@ -42,6 +75,10 @@
   --tg-text: #f8fafc;
   --tg-text-muted: #a8b3c7;
   --tg-border: #2a374d;
+
+  --tg-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --tg-shadow-md: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --tg-shadow-lg: 0 28px 70px -14px rgba(0, 0, 0, 0.6);
 }
 
 * { box-sizing: border-box; }
@@ -53,7 +90,10 @@ body {
   background: var(--tg-app-gradient);
   background-attachment: fixed;
   color: var(--tg-text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 button, input, select, textarea { font: inherit; }
 
@@ -89,10 +129,28 @@ body::after {
 
 ::selection { background: var(--tg-ring); color: #0f172a; }
 
+/* --- custom scrollbar, theme-aware --- */
+* { scrollbar-color: color-mix(in srgb, var(--tg-primary) 35%, transparent) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--tg-primary) 30%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--tg-primary) 50%, transparent); background-clip: padding-box; }
+
+/* ==========================================================================
+   Layout shells
+   ========================================================================== */
+
 .tg-app-shell {
   min-height: 100dvh;
   background: color-mix(in srgb, var(--tg-background) 72%, transparent);
   color: var(--tg-text);
+  position: relative;
+  isolation: isolate;
 }
 
 .tg-surface {
@@ -102,14 +160,55 @@ body::after {
   backdrop-filter: blur(var(--tg-glass-blur));
 }
 
+.tg-glass-nav {
+  border-color: var(--tg-border);
+  background: color-mix(in srgb, var(--tg-surface) 78%, transparent);
+  backdrop-filter: blur(calc(var(--tg-glass-blur) + 10px)) saturate(160%);
+  -webkit-backdrop-filter: blur(calc(var(--tg-glass-blur) + 10px)) saturate(160%);
+}
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
 .tg-card {
+  position: relative;
   border: 1px solid var(--tg-border);
-  border-radius: 1.5rem;
+  border-radius: var(--tg-radius-lg);
   background: var(--tg-surface-alpha);
   color: var(--tg-text);
-  box-shadow: 0 12px 34px color-mix(in srgb, var(--tg-text) 7%, transparent);
+  box-shadow: var(--tg-shadow-md);
   backdrop-filter: blur(var(--tg-glass-blur));
+  transition: transform var(--tg-duration) var(--tg-ease), box-shadow var(--tg-duration) var(--tg-ease), border-color var(--tg-duration) var(--tg-ease);
 }
+
+/* Opt-in: add to any .tg-card for a tactile hover/press lift. */
+.tg-card-interactive {
+  cursor: pointer;
+}
+.tg-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--tg-primary) 30%, var(--tg-border));
+  box-shadow: var(--tg-shadow-lg);
+}
+.tg-card-interactive:active { transform: translateY(-1px) scale(0.995); }
+
+/* Thin gradient top-edge accent, used on hero/feature cards. */
+.tg-card-accent::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  border-radius: var(--tg-radius-lg) var(--tg-radius-lg) 0 0;
+  background: linear-gradient(90deg, var(--tg-primary), var(--tg-accent));
+  opacity: 0;
+  transition: opacity var(--tg-duration) var(--tg-ease);
+}
+.tg-card-accent:hover::before { opacity: 1; }
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
 
 .tg-primary-button {
   display: inline-flex;
@@ -117,20 +216,127 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 0.75rem;
-  background: var(--tg-primary);
+  border-radius: var(--tg-radius-sm);
+  background: linear-gradient(135deg, var(--tg-primary), var(--tg-primary-strong));
   padding: 0.625rem 1rem;
   color: white;
   font-weight: 700;
+  box-shadow: var(--tg-shadow-glow);
+  transition: transform var(--tg-duration-fast) var(--tg-ease), box-shadow var(--tg-duration) var(--tg-ease), filter var(--tg-duration-fast) var(--tg-ease);
 }
 
-.tg-primary-button:hover { background: var(--tg-primary-hover); }
+.tg-primary-button:hover { filter: brightness(1.08); box-shadow: var(--tg-shadow-glow-lg); transform: translateY(-1px); }
+.tg-primary-button:active { transform: translateY(0) scale(0.98); filter: brightness(0.97); }
 .tg-muted { color: var(--tg-text-muted); }
 
 :focus-visible {
   outline: 2px solid var(--tg-ring);
   outline-offset: 2px;
+  border-radius: 0.5rem;
 }
+
+/* ==========================================================================
+   Navigation helpers (sidebar / mobile dock)
+   ========================================================================== */
+
+.tg-nav-item {
+  position: relative;
+  transition: background-color var(--tg-duration-fast) var(--tg-ease), color var(--tg-duration-fast) var(--tg-ease), transform var(--tg-duration-fast) var(--tg-ease);
+}
+.tg-nav-item:hover { transform: translateX(2px); }
+.tg-nav-item[data-active="true"] {
+  background: var(--tg-primary-soft);
+  color: var(--tg-primary);
+}
+.tg-nav-item[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  translate: 0 -50%;
+  height: 60%;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--tg-primary), var(--tg-accent));
+}
+
+/* ==========================================================================
+   Motion utilities
+   ========================================================================== */
+
+@keyframes tg-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes tg-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes tg-scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes tg-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1.5deg); }
+}
+@keyframes tg-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4%, -6%) scale(1.08); }
+  66% { transform: translate(-3%, 4%) scale(0.96); }
+}
+@keyframes tg-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes tg-pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tg-primary) 45%, transparent); }
+  70% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--tg-primary) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tg-primary) 0%, transparent); }
+}
+@keyframes tg-gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.tg-animate-fade-up { animation: tg-fade-up var(--tg-duration-slow) var(--tg-ease) both; }
+.tg-animate-fade-in { animation: tg-fade-in var(--tg-duration-slow) var(--tg-ease) both; }
+.tg-animate-scale-in { animation: tg-scale-in var(--tg-duration-slow) var(--tg-ease) both; }
+.tg-float { animation: tg-float 6s var(--tg-ease) infinite; }
+.tg-pulse-dot { animation: tg-pulse-ring 2.2s ease-out infinite; }
+
+.tg-delay-1 { animation-delay: 60ms; }
+.tg-delay-2 { animation-delay: 120ms; }
+.tg-delay-3 { animation-delay: 180ms; }
+.tg-delay-4 { animation-delay: 240ms; }
+.tg-delay-5 { animation-delay: 300ms; }
+.tg-delay-6 { animation-delay: 360ms; }
+
+.tg-gradient-text {
+  background: linear-gradient(90deg, var(--tg-primary), var(--tg-accent), var(--tg-primary));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: tg-gradient-x 6s ease-in-out infinite;
+}
+
+.tg-shimmer {
+  background: linear-gradient(90deg, var(--tg-surface-muted) 25%, color-mix(in srgb, var(--tg-primary) 12%, var(--tg-surface-muted)) 37%, var(--tg-surface-muted) 63%);
+  background-size: 400% 100%;
+  animation: tg-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Ambient background blobs (see components/decorative/ambient-background.tsx) */
+.tg-blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  animation: tg-blob 16s var(--tg-ease) infinite;
+  will-change: transform;
+}
+:root[data-theme-mode="dark"] .tg-blob { opacity: 0.35; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -140,7 +346,6 @@ body::after {
     transition-duration: 0.01ms !important;
   }
 }
-
 
 /* Compatibility layer for components that still use the original slate/white classes. */
 :root[data-theme-mode="dark"] .bg-white,
