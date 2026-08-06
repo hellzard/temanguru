@@ -1,39 +1,26 @@
-# Mulai — Hanya Dua Langkah
+# MULAI DARI SINI — Teman Guru Guest-First v0.4
 
-## Langkah 1
+Versi ini mempunyai dua cara pakai:
 
-Ekstrak ZIP lalu buka folder:
+1. **Tanpa login** — semua data utama disimpan di perangkat melalui IndexedDB. Backup dilakukan manual ke file JSON.
+2. **Dengan akun** — login memakai email + kata sandi. Snapshot ruang kerja disinkronkan ke Supabase agar dapat dibuka di perangkat lain.
 
-```text
-temanguru-antigravity-autopilot-workspace
-```
+Fitur lupa kata sandi memakai **kode OTP email**, bukan magic link.
 
-di Antigravity.
+## Urutan pemasangan yang disarankan
 
-## Langkah 2
+1. Baca `docs/INSTALL_STEP_BY_STEP.md`.
+2. Buat project Supabase baru.
+3. Pasang migration dengan Supabase CLI.
+4. Atur login email+sandi dan template OTP.
+5. Upload folder ini ke GitHub.
+6. Import repository ke Vercel.
+7. Isi environment variables.
+8. Deploy dan jalankan checklist pengujian.
 
-Buka:
+## Hal penting
 
-```text
-prompts/00-AUTOPILOT-FIRST-MESSAGE.md
-```
-
-Salin seluruh isinya ke Agent Mode, lalu kirim.
-
-Antigravity akan menjalankan:
-
-```text
-/autopilot-setup
-```
-
-Kamu tidak perlu mengetik `npm install`, mengisi `.env.local`, menjalankan server, atau menjalankan pemeriksaan sendiri.
-
-Antigravity hanya boleh meminta bantuanmu untuk login, authorization akun, pilihan organisasi/region, izin administrator, atau keputusan billing yang tidak aman untuk diasumsikan.
-
-Setelah setup berhasil, agen akan menyarankan:
-
-```text
-/plan-wave
-```
-
-untuk mulai membangun fitur berikutnya.
+- Jangan upload file ZIP ke dalam repository. Ekstrak dahulu lalu upload **isi folder `temanguru`**.
+- Jangan pernah memasukkan `service_role`, `secret key`, atau password database ke Vercel sebagai `NEXT_PUBLIC_*`.
+- Jangan hapus deployment lama sebelum deployment baru berhasil diuji.
+- Mode tanpa login tetap bekerja walau Supabase belum dikonfigurasi.

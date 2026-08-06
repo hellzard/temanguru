@@ -1,34 +1,4 @@
-import { requireActiveSchool } from "@/lib/schools/active-school";
-import { createClient } from "@/lib/supabase/server";
-import { ConnectClient } from "./client";
-
-export const metadata = {
-  title: "Komunikasi & Wali | Teman Guru",
-};
-
-export default async function ConnectPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  let students: Record<string, unknown>[] = [];
-
-  if (user) {
-    const { active: member } = await requireActiveSchool();
-
-    if (member) {
-      const { data: stData } = await supabase
-        .from("students")
-        .select("id, display_name, local_code")
-        .eq("school_id", member.schoolId)
-        .order("display_name", { ascending: true });
-        
-      if (stData) students = stData;
-    }
-  }
-
-  return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <ConnectClient students={students} />
-    </div>
-  );
-}
+import { MessageCircleMore } from "lucide-react";import { EmptyState } from "@/components/dashboard/empty-state";import { FormMessage } from "@/components/dashboard/form-message";import { PageHeader } from "@/components/dashboard/page-header";import { SubmitButton } from "@/components/dashboard/submit-button";import { firstParam } from "@/lib/action-result";import { formatDateTime } from "@/lib/format";import { requireActiveSchool } from "@/lib/schools/active-school";import { createClient } from "@/lib/supabase/server";import { saveCommunicationDraft } from "./actions";import { QuickComposer } from "./composer";
+export const metadata={title:'Connect'};
+function studentName(v:unknown){if(Array.isArray(v))return studentName(v[0]);if(v&&typeof v==='object'&&'display_name'in v)return String((v as Record<string,unknown>).display_name);return'Umum'}
+export default async function ConnectPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){const params=await searchParams;const context=await requireActiveSchool();const supabase=await createClient();const[{data:students,error:sError},{data:drafts,error:dError}]=await Promise.all([supabase.from('students').select('id,display_name').eq('school_id',context.active.schoolId).eq('status','active').order('display_name'),supabase.from('communication_drafts').select('id,subject,message,status,created_at,students(display_name)').eq('school_id',context.active.schoolId).order('created_at',{ascending:false}).limit(20)]);if(sError||dError)throw sError??dError;return <div><PageHeader title="Connect" description="Susun komunikasi orang tua tanpa menyimpan nomor telepon pada profil murid."/><div className="mt-7 grid gap-6 xl:grid-cols-2"><QuickComposer/><section className="tg-card p-5"><h2 className="font-bold">Simpan draf internal</h2><form action={saveCommunicationDraft} className="mt-5 space-y-4"><FormMessage error={firstParam(params.error)} success={firstParam(params.success)}/><label className="block text-sm font-bold">Murid <span className="font-normal tg-muted">(opsional)</span><select name="student_id" className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3"><option value="">Pesan umum</option>{((students??[]) as Array<Record<string,unknown>>).map(student=><option key={String(student.id)} value={String(student.id)}>{String(student.display_name)}</option>)}</select></label><label className="block text-sm font-bold">Subjek<input name="subject" className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3"/></label><label className="block text-sm font-bold">Pesan<textarea name="message" required rows={7} maxLength={4000} className="mt-2 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] p-3"/></label><SubmitButton>Simpan draf</SubmitButton></form></section></div><section className="mt-6">{drafts?.length?<div className="grid gap-3 md:grid-cols-2">{((drafts??[]) as Array<Record<string,unknown>>).map(draft=><article key={String(draft.id)} className="tg-card p-5"><div className="flex items-start gap-3"><MessageCircleMore size={20} className="mt-0.5 text-[var(--tg-primary)]"/><div><h2 className="font-bold">{draft.subject?String(draft.subject):studentName(draft.students)}</h2><p className="mt-1 text-xs tg-muted">{studentName(draft.students)} · {formatDateTime(String(draft.created_at))}</p><p className="mt-3 line-clamp-4 whitespace-pre-wrap text-sm leading-6 tg-muted">{String(draft.message)}</p></div></div></article>)}</div>:<EmptyState icon={MessageCircleMore} title="Belum ada draf" description="Draf internal yang disimpan akan tampil di sini."/>}</section></div>}

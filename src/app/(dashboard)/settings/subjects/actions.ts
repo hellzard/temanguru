@@ -1,45 +1,8 @@
 "use server";
-
-import { requireActiveSchool } from "@/lib/schools/active-school";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { redirectWithMessage } from "@/lib/action-result";
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
-
-const createSubjectSchema = z.object({
-  name: z.string().trim().min(1, "Nama mata pelajaran wajib diisi.").max(120, "Maksimal 120 karakter."),
-  code: z.string().trim().max(50, "Maksimal 50 karakter.").optional(),
-});
-
-export async function createSubject(prevState: unknown, formData: FormData) {
-  const parsed = createSubjectSchema.safeParse({
-    name: formData.get("name"),
-    code: formData.get("code") || undefined,
-  });
-
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0].message };
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Sesi tidak valid." };
-
-  const { active: member } = await requireActiveSchool();
-
-  if (!member) return { error: "Tidak memiliki akses ke sekolah." };
-
-  const { error } = await supabase.from("subjects").insert({
-    school_id: member.schoolId,
-    name: parsed.data.name,
-    code: parsed.data.code || null,
-  });
-
-  if (error) {
-    if (error.code === "23505") return { error: "Kode mata pelajaran ini sudah digunakan di sekolah Anda." };
-    console.error("createSubject failed:", error);
-    return { error: "Gagal menyimpan mata pelajaran." };
-  }
-
-  revalidatePath("/settings/subjects");
-  return { success: true };
-}
+const schema=z.object({name:z.string().trim().min(2).max(120),code:z.string().trim().max(30).optional()});
+export async function createSubject(formData:FormData){const parsed=schema.safeParse({name:formData.get('name'),code:formData.get('code')||undefined});if(!parsed.success)redirectWithMessage('/settings/subjects','error','Mata pelajaran belum valid.');const context=await requireActiveSchool();if(!['owner','admin'].includes(context.active.role))redirectWithMessage('/settings/subjects','error','Izin tidak mencukupi.');const supabase=await createClient();const{error}=await supabase.from('subjects').insert({school_id:context.active.schoolId,name:parsed.data.name,code:parsed.data.code||null});if(error)redirectWithMessage('/settings/subjects','error',error.code==='23505'?'Kode mata pelajaran sudah digunakan.':'Mata pelajaran belum tersimpan.');revalidatePath('/settings/subjects');redirectWithMessage('/settings/subjects','success','Mata pelajaran berhasil dibuat.');}

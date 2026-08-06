@@ -45,25 +45,11 @@ select set_config('request.jwt.claims','{"sub":"10000000-0000-0000-0000-00000000
 
 select is((select count(*) from public.inventory_items), 1::bigint, 'teacher sees only own school inventory');
 select is((select name from public.inventory_items limit 1), 'Projector A', 'teacher cannot see school B item');
-select is(
-  (with changed as (
-    delete from public.inventory_items
-    where id = 'a1000000-0000-0000-0000-000000000001'
-    returning 1
-  ) select count(*) from changed),
-  0::bigint,
-  'teacher cannot delete inventory'
-);
-select is(
-  (with changed as (
-    update public.inventory_items
-    set name = 'Changed'
-    where id = 'a1000000-0000-0000-0000-000000000001'
-    returning 1
-  ) select count(*) from changed),
-  0::bigint,
-  'teacher cannot update inventory'
-);
+delete from public.inventory_items where id = 'a1000000-0000-0000-0000-000000000001';
+select is((select count(*) from public.inventory_items where id = 'a1000000-0000-0000-0000-000000000001'), 1::bigint, 'teacher cannot delete inventory');
+
+update public.inventory_items set name = 'Changed' where id = 'a1000000-0000-0000-0000-000000000001';
+select is((select name from public.inventory_items where id = 'a1000000-0000-0000-0000-000000000001'), 'Projector A', 'teacher cannot update inventory');
 
 select set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000003',true);
 select set_config('request.jwt.claims','{"sub":"10000000-0000-0000-0000-000000000003","role":"authenticated"}',true);
@@ -71,16 +57,8 @@ select is((select count(*) from public.inventory_items), 0::bigint, 'suspended m
 
 select set_config('request.jwt.claim.sub','10000000-0000-0000-0000-000000000001',true);
 select set_config('request.jwt.claims','{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}',true);
-select is(
-  (with changed as (
-    update public.inventory_items
-    set name = 'Updated by owner'
-    where id = 'a1000000-0000-0000-0000-000000000001'
-    returning 1
-  ) select count(*) from changed),
-  1::bigint,
-  'owner can update inventory'
-);
+update public.inventory_items set name = 'Updated by owner' where id = 'a1000000-0000-0000-0000-000000000001';
+select is((select name from public.inventory_items where id = 'a1000000-0000-0000-0000-000000000001'), 'Updated by owner', 'owner can update inventory');
 select lives_ok(
   $$select public.set_active_school('a0000000-0000-0000-0000-000000000001')$$,
   'active member can select active school'

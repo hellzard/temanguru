@@ -1,0 +1,17 @@
+TEMAN GURU — ANTIGRAVITY AUTOPILOT
+
+CARA:
+1. Ekstrak ZIP.
+2. Antigravity → New Project → Add Folder.
+3. Pilih folder `temanguru`.
+4. Buka Agent dan pilih Local Mode.
+5. Ketik: /temanguru-autopilot
+6. Setujui hanya login/authorization, Docker, biaya, perubahan database production, atau deploy production.
+7. Biarkan Antigravity memperbaiki error sampai seluruh quality gate hijau.
+
+JANGAN:
+- mengirim password, OTP, atau key ke chat;
+- mengizinkan force push;
+- menghapus deployment lama sebelum versi baru sehat.
+
+Jika slash command tidak muncul, tempel isi `PROMPT_ANTIGRAVITY_SATU_KALI.txt`.

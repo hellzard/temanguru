@@ -1,1 +1,0 @@
-Lanjutkan proyek Teman Guru dari status terakhir. Baca `docs/IMPLEMENTATION_STATUS.md`, `docs/DECISIONS.md`, Git log, Git status, dan hasil CI/deployment terakhir. Jangan mengulang pekerjaan yang sudah lulus. Jalankan `/resume-project`, pilih slice terkecil berikutnya, dan pertahankan identitas `hellzard/temanguru` serta Vercel `temanguru`.

@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Teman Guru",
     description: "Ruang kerja harian guru: presensi, jurnal, nilai, dokumen, dan kegiatan sekolah.",
     id: "/",
-    start_url: "/dashboard",
+    start_url: "/workspace",
     scope: "/",
     display: "standalone",
     background_color: "#f7f8fc",
@@ -18,7 +18,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     share_target: {
-      action: "/connect",
+      action: "/workspace",
       method: "GET",
       enctype: "application/x-www-form-urlencoded",
       params: { title: "title", text: "text", url: "url" },

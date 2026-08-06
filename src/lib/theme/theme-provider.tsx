@@ -97,7 +97,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = loadThemeSettings();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(stored);
     setResolvedMode(resolveMode(stored.mode));
     loadWallpaperBlob()
@@ -118,7 +117,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const mode = resolveMode(settings.mode);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResolvedMode(mode);
     saveThemeSettings(settings);
     apply(settings, mode, wallpaperUrl);

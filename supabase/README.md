@@ -1,11 +1,11 @@
-# Supabase Setup
+# Supabase
 
-Apply migrations in order with the Supabase CLI or SQL editor. Use `seed.sql` only in development.
-
-After applying migrations:
+Folder ini berisi konfigurasi local stack, migration, seed aman, dan pgTAP tests.
 
 ```bash
-supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.generated.ts
+npx supabase start
+npx supabase db reset --local
+npx supabase test db
 ```
 
-Review every RLS policy with authenticated users from two different schools before using real data.
+Jangan menjalankan `db push` ke production sebelum reset lokal dan seluruh test lulus.

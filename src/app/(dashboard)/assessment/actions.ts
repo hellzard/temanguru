@@ -1,168 +1,82 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { redirectWithMessage } from "@/lib/action-result";
+import { relationObject } from "@/lib/relations";
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 
-export async function createAssessment(prevState: unknown, formData: FormData) {
+const assessmentSchema = z.object({
+  teaching_assignment_id: z.string().uuid(),
+  title: z.string().trim().min(2).max(180),
+  category: z.enum(["tugas", "kuis", "ulangan", "uts", "uas", "praktik", "proyek"]),
+  assessment_date: z.string().date().optional(),
+  max_score: z.coerce.number().positive().max(10000),
+  weight: z.coerce.number().min(0).max(1000),
+});
+
+export async function createAssessment(formData: FormData) {
+  const assignmentId = String(formData.get("teaching_assignment_id") ?? "");
+  const parsed = assessmentSchema.safeParse({
+    teaching_assignment_id: assignmentId,
+    title: formData.get("title"),
+    category: formData.get("category"),
+    assessment_date: formData.get("assessment_date") || undefined,
+    max_score: formData.get("max_score") || 100,
+    weight: formData.get("weight") || 1,
+  });
+  if (!parsed.success) redirectWithMessage(`/assessment?assignment=${encodeURIComponent(assignmentId)}`, "error", parsed.error.issues[0].message);
+  const context = await requireActiveSchool();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Not authenticated" };
-  }
-
-  const assignment_id = formData.get("assignment_id") as string;
-  const title = formData.get("title") as string;
-  const category = formData.get("category") as string;
-  const date = formData.get("date") as string;
-  const max_score = formData.get("max_score") as string;
-  const weight = formData.get("weight") as string;
-
-  if (!assignment_id || !title || !date) {
-    return { error: "Mohon lengkapi semua field yang diwajibkan." };
-  }
-
-  const { data: assignment, error: assignmentError } = await supabase
-    .from("teaching_assignments")
-    .select("school_id")
-    .eq("id", assignment_id)
-    .single();
-
-  if (assignmentError || !assignment) {
-    return { error: "Kelas tidak ditemukan atau Anda tidak memiliki akses." };
-  }
-
-  const { error } = await supabase
-    .from("assessments")
-    .insert({
-      school_id: assignment.school_id,
-      teaching_assignment_id: assignment_id,
-      title,
-      category: category || "tugas",
-      assessment_date: date,
-      max_score: parseFloat(max_score) || 100,
-      weight: parseFloat(weight) || 1,
-      created_by: user.id
-    });
-
-  if (error) {
-    console.error("Error creating assessment:", error);
-    return { error: error.message };
-  }
-
-  return { message: "Penilaian berhasil dibuat!" };
+  const { error } = await supabase.from("assessments").insert({
+    school_id: context.active.schoolId,
+    created_by: context.userId,
+    ...parsed.data,
+    assessment_date: parsed.data.assessment_date || null,
+  });
+  if (error) redirectWithMessage(`/assessment?assignment=${encodeURIComponent(assignmentId)}`, "error", "Penilaian belum berhasil dibuat. Pastikan Anda mengajar kelas tersebut.");
+  revalidatePath("/assessment");
+  redirectWithMessage(`/assessment?assignment=${encodeURIComponent(assignmentId)}`, "success", "Penilaian berhasil dibuat.");
 }
 
-export async function getAssessments(assignment_id: string) {
+export async function saveAssessmentScores(formData: FormData) {
+  const assessmentId = z.string().uuid().safeParse(formData.get("assessment_id"));
+  if (!assessmentId.success) redirectWithMessage("/assessment", "error", "Penilaian tidak valid.");
+  const context = await requireActiveSchool();
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("assessments")
-    .select("*")
-    .eq("teaching_assignment_id", assignment_id)
-    .order("assessment_date", { ascending: false });
-
-  if (error) return [];
-  return data;
-}
-
-export async function saveAssessmentScores(assessment_id: string, scores: { student_id: string, original_score: number | null, final_score: number | null, note: string }[]) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return { error: "Not authenticated" };
-
-  const records = scores.map(s => ({
-    assessment_id,
-    student_id: s.student_id,
-    original_score: s.original_score,
-    final_score: s.final_score,
-    note: s.note,
-    updated_by: user.id,
-    updated_at: new Date().toISOString()
-  }));
-
-  const { error } = await supabase
-    .from("assessment_scores")
-    .upsert(records, { onConflict: "assessment_id, student_id" });
-
-  if (error) {
-    console.error("Error saving scores:", error);
-    return { error: error.message };
-  }
-
-  return { message: "Nilai berhasil disimpan!" };
-}
-
-export async function addRemedialAttempt(
-  assessment_id: string,
-  student_id: string,
-  remedial_score: number,
-  final_score: number,
-  attempt_date: string,
-  note: string
-) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return { error: "Not authenticated" };
-
-  // 1. Get school_id and ensure access
   const { data: assessment, error: assessmentError } = await supabase
     .from("assessments")
-    .select("school_id")
-    .eq("id", assessment_id)
-    .single();
+    .select("id,max_score,teaching_assignments(class_id)")
+    .eq("id", assessmentId.data)
+    .eq("school_id", context.active.schoolId)
+    .maybeSingle();
+  if (assessmentError || !assessment) redirectWithMessage("/assessment", "error", "Penilaian tidak ditemukan.");
 
-  if (assessmentError || !assessment) {
-    return { error: "Penilaian tidak ditemukan." };
+  const assignment = relationObject(assessment.teaching_assignments);
+  const classId = typeof assignment?.class_id === "string" ? assignment.class_id : null;
+  if (!classId) redirectWithMessage("/assessment", "error", "Kelas penilaian tidak ditemukan.");
+  const { data: memberships, error: membershipError } = await supabase.from("class_students").select("student_id").eq("class_id", classId);
+  if (membershipError) redirectWithMessage(`/assessment/${assessmentId.data}`, "error", "Daftar murid belum dapat diverifikasi.");
+  const allowed = new Set((memberships ?? []).map((row) => row.student_id));
+  const maxScore = Number(assessment.max_score);
+  const rows: Array<{ assessment_id: string; student_id: string; original_score: number | null; note: null; updated_by: string }> = [];
+
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith("score_")) continue;
+    const studentId = z.string().uuid().safeParse(key.slice(6));
+    if (!studentId.success || !allowed.has(studentId.data)) continue;
+    const raw = String(value).trim();
+    const score = raw === "" ? null : Number(raw);
+    if (score !== null && (!Number.isFinite(score) || score < 0 || score > maxScore)) redirectWithMessage(`/assessment/${assessmentId.data}`, "error", `Nilai harus berada di antara 0 dan ${maxScore}.`);
+    rows.push({ assessment_id: assessmentId.data, student_id: studentId.data, original_score: score, note: null, updated_by: context.userId });
   }
 
-  // 2. Determine attempt_number
-  const { data: existingAttempts, error: attemptsError } = await supabase
-    .from("remedial_attempts")
-    .select("attempt_number")
-    .eq("assessment_id", assessment_id)
-    .eq("student_id", student_id)
-    .order("attempt_number", { ascending: false })
-    .limit(1);
-
-  if (attemptsError) {
-    return { error: "Gagal memuat riwayat remedial." };
+  if (rows.length) {
+    const { error } = await supabase.from("assessment_scores").upsert(rows, { onConflict: "assessment_id,student_id" });
+    if (error) redirectWithMessage(`/assessment/${assessmentId.data}`, "error", "Nilai belum berhasil disimpan.");
   }
-
-  const nextAttemptNumber = existingAttempts && existingAttempts.length > 0
-    ? existingAttempts[0].attempt_number + 1
-    : 1;
-
-  // 3. Insert remedial attempt
-  const { error: insertError } = await supabase
-    .from("remedial_attempts")
-    .insert({
-      school_id: assessment.school_id,
-      assessment_id,
-      student_id,
-      attempt_number: nextAttemptNumber,
-      score: remedial_score,
-      attempted_on: attempt_date,
-      note,
-      created_by: user.id
-    });
-
-  if (insertError) {
-    console.error("Error inserting remedial attempt:", insertError);
-    return { error: "Gagal menyimpan data remedial." };
-  }
-
-  // 4. Update final_score in assessment_scores
-  const { error: updateError } = await supabase
-    .from("assessment_scores")
-    .update({ final_score, updated_at: new Date().toISOString() })
-    .eq("assessment_id", assessment_id)
-    .eq("student_id", student_id);
-
-  if (updateError) {
-    console.error("Error updating final score:", updateError);
-    return { error: "Gagal memperbarui nilai akhir." };
-  }
-
-  return { message: "Remedial berhasil dicatat!" };
+  revalidatePath(`/assessment/${assessmentId.data}`);
+  revalidatePath("/dashboard");
+  redirectWithMessage(`/assessment/${assessmentId.data}`, "success", "Nilai berhasil disimpan.");
 }

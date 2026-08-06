@@ -4,7 +4,7 @@ import { sanitizeInternalPath } from "@/lib/auth/safe-redirect";
 
 export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return NextResponse.next({ request });
 
   let response = NextResponse.next({ request });
@@ -32,15 +32,9 @@ export async function updateSession(request: NextRequest) {
 
   if (isProtected && !data?.claims) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    loginUrl.pathname = "/workspace";
     loginUrl.search = "";
-    loginUrl.searchParams.set(
-      "next",
-      sanitizeInternalPath(
-        `${request.nextUrl.pathname}${request.nextUrl.search}`,
-        "/dashboard",
-      ),
-    );
+    loginUrl.searchParams.set("from", sanitizeInternalPath(`${request.nextUrl.pathname}${request.nextUrl.search}`, "/dashboard"));
     return NextResponse.redirect(loginUrl);
   }
 

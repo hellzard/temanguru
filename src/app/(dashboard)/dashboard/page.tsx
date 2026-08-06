@@ -1,222 +1,87 @@
-import { requireActiveSchool } from "@/lib/schools/active-school";
 import Link from "next/link";
-import { ArrowRight, BookOpenText, ChartNoAxesColumnIncreasing, ClipboardCheck, Clock3, Plus, Users, CalendarX2 } from "lucide-react";
+import { BookOpenText, CalendarDays, ChartNoAxesColumnIncreasing, ClipboardCheck, Plus, Users } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { Badge } from "@/components/ui/badge";
+import { MetricCard } from "@/components/dashboard/metric-card";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { StatusPill } from "@/components/dashboard/status-pill";
+import { formatDate } from "@/lib/format";
+import { requireActiveSchool } from "@/lib/schools/active-school";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Beranda" };
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  let schoolName = "Sekolah";
-  let userName = "Guru";
-  let activeYearId = null;
-
-  let todayClassCount = 0;
-  let activeStudentsCount = 0;
-  let schedulesData: Record<string, unknown>[] = [];
-  
-  // 1 = Monday, 7 = Sunday
-  const todayDate = new Date();
-  const currentDayIndex = todayDate.getDay() === 0 ? 7 : todayDate.getDay();
-
-  if (user) {
-    const { active: member } = await requireActiveSchool();
-
-    if (member) {
-      schoolName = member.schoolName || "Sekolah";
-      
-      const { data: profileData } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
-      userName = profileData?.display_name || "Guru";
-
-      const { data: activeYear } = await supabase
-        .from("academic_years")
-        .select("id")
-        .eq("school_id", member.schoolId)
-        .eq("is_active", true)
-        .limit(1)
-        .single();
-
-      if (activeYear) {
-        activeYearId = activeYear.id;
-
-        // Fetch schedules for today
-        const { data: rawSchedules } = await supabase
-          .from("schedules")
-          .select(`
-            *,
-            teaching_assignments!inner (
-              id,
-              teacher_id,
-              academic_year_id,
-              classes ( name ),
-              subjects ( name )
-            )
-          `)
-          .eq("school_id", member.schoolId)
-          .eq("day_of_week", currentDayIndex)
-          .eq("teaching_assignments.teacher_id", user.id)
-          .eq("teaching_assignments.academic_year_id", activeYearId)
-          .order("starts_at", { ascending: true });
-          
-        if (rawSchedules) {
-          schedulesData = rawSchedules;
-          todayClassCount = rawSchedules.length;
-        }
-
-        // Active students count (unique students in classes this teacher teaches)
-        // Since we don't have a direct query to get distinct students easily without custom RPC or doing it in JS,
-        // Let's get all classes the teacher teaches, then count unique students.
-        const { data: assignments } = await supabase
-          .from("teaching_assignments")
-          .select("class_id")
-          .eq("school_id", member.schoolId)
-          .eq("teacher_id", user.id)
-          .eq("academic_year_id", activeYearId);
-          
-        if (assignments && assignments.length > 0) {
-          const classIds = Array.from(new Set(assignments.map(a => a.class_id)));
-          
-          const { data: students } = await supabase
-            .from("class_students")
-            .select("student_id")
-            .in("class_id", classIds);
-            
-          if (students) {
-            const uniqueStudents = new Set(students.map(s => s.student_id));
-            activeStudentsCount = uniqueStudents.size;
-          }
-        }
-      }
-    }
+function relationName(value: unknown, fallback: string) {
+  if (Array.isArray(value)) return relationName(value[0], fallback);
+  if (value && typeof value === "object" && "name" in value) {
+    const name = (value as { name?: unknown }).name;
+    return typeof name === "string" ? name : fallback;
   }
+  return fallback;
+}
 
-  // Indonesian date formatting for the eyebrow
-  const formatter = new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  });
-  const todayStr = formatter.format(todayDate);
+export default async function DashboardPage() {
+  const context = await requireActiveSchool();
+  const supabase = await createClient();
+  const today = new Date();
+  const todayIso = today.toISOString().slice(0, 10);
+  const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
 
-  const pendingItems: Record<string, unknown>[] = []; // Empty for now until Wave 2/3
+  const [studentsResult, classesResult, pendingScoresResult, sessionsResult, schedulesResult, journalsResult] = await Promise.all([
+    supabase.from("students").select("id", { count: "exact", head: true }).eq("school_id", context.active.schoolId).eq("status", "active"),
+    supabase.from("classes").select("id", { count: "exact", head: true }).eq("school_id", context.active.schoolId).is("archived_at", null),
+    supabase.from("assessment_scores").select("assessment_id,assessments!inner(school_id)", { count: "exact", head: true }).eq("assessments.school_id", context.active.schoolId).is("original_score", null),
+    supabase.from("attendance_sessions").select("id", { count: "exact", head: true }).eq("school_id", context.active.schoolId).eq("session_date", todayIso).eq("state", "final"),
+    supabase
+      .from("schedules")
+      .select("id, starts_at, ends_at, room, teaching_assignments!inner(school_id, teacher_id, classes(name), subjects(name))")
+      .eq("school_id", context.active.schoolId)
+      .eq("day_of_week", dayOfWeek)
+      .order("starts_at")
+      .limit(6),
+    supabase.from("teaching_journals").select("id, topic, journal_date, state").eq("school_id", context.active.schoolId).order("journal_date", { ascending: false }).limit(4),
+  ]);
+
+  const counts = [studentsResult, classesResult, pendingScoresResult, sessionsResult];
+  const firstError = counts.find((result) => result.error)?.error ?? schedulesResult.error ?? journalsResult.error;
+  if (firstError) throw firstError;
+
+  const schedules = (schedulesResult.data ?? []) as Array<Record<string, unknown>>;
+  const journals = (journalsResult.data ?? []) as Array<Record<string, unknown>>;
 
   return (
     <div>
-      <PageHeader 
-        eyebrow={todayStr} 
-        title={`Selamat datang, ${userName} di ${schoolName}`} 
-        description="Lihat kelas berikutnya dan selesaikan pekerjaan yang paling mendesak." 
-        action={<Link href="/record" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white"><Plus size={18} />Catat kegiatan</Link>} 
+      <PageHeader
+        eyebrow={formatDate(today, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        title={`Ruang kerja ${context.active.schoolName}`}
+        description="Lihat kegiatan berikutnya dan selesaikan pekerjaan yang paling mendesak."
+        action={<Link href="/record" className="tg-primary-button"><Plus size={18} />Catat kelas</Link>}
       />
-      
-      {!activeYearId && (
-        <div className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950 mb-8">
-          <h2 className="text-lg font-bold">Tahun Ajaran Belum Diatur</h2>
-          <p className="mt-2 text-sm text-amber-800">
-            Minta admin sekolah mengatur tahun ajaran aktif agar data kelas dan jadwal dapat ditampilkan.
-          </p>
-        </div>
-      )}
 
-      <section aria-labelledby="ringkasan" className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <h2 id="ringkasan" className="sr-only">Ringkasan</h2>
-        {[
-          { label: 'Kelas hari ini', value: todayClassCount.toString(), icon: Clock3 },
-          { label: 'Murid aktif', value: activeStudentsCount.toString(), icon: Users },
-          { label: 'Presensi selesai', value: '0/0', icon: ClipboardCheck },
-          { label: 'Nilai tertunda', value: '0', icon: ChartNoAxesColumnIncreasing }
-        ].map(({ label, value, icon: Icon }) => (
-          <article key={label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="grid size-10 place-items-center rounded-2xl bg-indigo-50 text-indigo-700">
-                <Icon size={20} />
-              </span>
-              <ArrowRight size={17} className="text-slate-300" />
-            </div>
-            <p className="mt-5 text-2xl font-bold text-slate-950">{value}</p>
-            <p className="mt-1 text-sm text-slate-600">{label}</p>
-          </article>
-        ))}
+      <section aria-label="Ringkasan" className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Kelas aktif" value={classesResult.count ?? 0} icon={CalendarDays} />
+        <MetricCard label="Murid aktif" value={studentsResult.count ?? 0} icon={Users} />
+        <MetricCard label="Presensi hari ini" value={sessionsResult.count ?? 0} icon={ClipboardCheck} />
+        <MetricCard label="Nilai kosong" value={pendingScoresResult.count ?? 0} icon={ChartNoAxesColumnIncreasing} />
       </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_.7fr]">
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-slate-950">Jadwal hari ini</h2>
-              <p className="mt-1 text-sm text-slate-500">Mulai dari kelas berikutnya.</p>
-            </div>
-            <Link href="/schedules" className="text-sm font-semibold text-indigo-700">Lihat semua</Link>
-          </div>
-          
-          <div className="mt-5 space-y-3">
-            {schedulesData.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center text-slate-500">
-                <CalendarX2 size={40} className="mb-3 text-slate-300" />
-                <p>Tidak ada jadwal mengajar hari ini.</p>
-              </div>
-            ) : (
-              schedulesData.map((item) => {
-                const assignment = item.teaching_assignments as Record<string, unknown>;
-                const className = (assignment?.classes as Record<string, unknown>)?.name as string || "Tanpa Kelas";
-                const subject = (assignment?.subjects as Record<string, unknown>)?.name as string || "Tanpa Mapel";
-                const timeStr = `${(item.starts_at as string).slice(0, 5)} - ${(item.ends_at as string).slice(0, 5)}`;
-                const roomStr = item.room ? item.room as string : "-";
-
-                return (
-                <article key={item.id as string} className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-4 sm:flex-row sm:items-center">
-                    <div className="shrink-0 text-sm font-bold text-indigo-700 sm:w-28">{timeStr}</div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-slate-950">{className} · {subject}</h3>
-                      <p className="text-sm text-slate-500">{roomStr}</p>
-                    </div>
-                    <Link href={`/record?assignment_id=${assignment.id as string}&date=${todayDate.toISOString().split('T')[0]}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50">
-                      Catat kelas
-                    </Link>
-                  </article>
-                );
-              })
-            )}
-          </div>
+      <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
+        <section className="tg-card p-5 sm:p-6">
+          <div className="flex items-center justify-between"><div><h2 className="text-lg font-bold">Jadwal hari ini</h2><p className="mt-1 text-sm tg-muted">Urut berdasarkan jam mulai.</p></div><Link href="/schedule" className="text-sm font-bold text-[var(--tg-primary)]">Lihat semua</Link></div>
+          {schedules.length ? <div className="mt-5 space-y-3">{schedules.map((item) => {
+            const assignment = item.teaching_assignments as Record<string, unknown> | null;
+            return <article key={String(item.id)} className="flex flex-col gap-3 rounded-2xl border border-[var(--tg-border)] p-4 sm:flex-row sm:items-center">
+              <div className="shrink-0 text-sm font-black text-[var(--tg-primary)] sm:w-32">{String(item.starts_at).slice(0,5)}–{String(item.ends_at).slice(0,5)}</div>
+              <div className="min-w-0 flex-1"><h3 className="font-semibold">{relationName(assignment?.classes, "Kelas")} · {relationName(assignment?.subjects, "Mapel")}</h3><p className="text-sm tg-muted">{String(item.room ?? "Ruang belum ditentukan")}</p></div>
+              <Link href="/record" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--tg-border)] px-4 text-sm font-bold">Catat</Link>
+            </article>;
+          })}</div> : <div className="mt-5"><EmptyState icon={CalendarDays} title="Tidak ada jadwal hari ini" description="Jadwal dapat ditambahkan dari menu Jadwal oleh owner atau admin." /></div>}
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
-          <h2 className="text-lg font-bold text-slate-950">Perlu perhatian</h2>
-          <div className="mt-5 space-y-4">
-            {pendingItems.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-                Semua tugas sudah diselesaikan. Keren!
-              </div>
-            ) : (
-              pendingItems.map(item => (
-                <article key={item.title as string} className="rounded-2xl bg-slate-50 p-4">
-                  <Badge tone={item.tone as "neutral" | "success" | "warning" | "danger" | undefined}>{item.tone === 'warning' ? 'Belum lengkap' : item.tone === 'danger' ? 'Tindak lanjut' : 'Tertunda'}</Badge>
-                  <h3 className="mt-3 font-semibold text-slate-950">{item.title as string}</h3>
-                  <p className="mt-1 text-sm leading-5 text-slate-600">{item.detail as string}</p>
-                </article>
-              ))
-            )}
-          </div>
+        <section className="tg-card p-5 sm:p-6">
+          <div className="flex items-center justify-between"><h2 className="text-lg font-bold">Jurnal terbaru</h2><Link href="/journal" className="text-sm font-bold text-[var(--tg-primary)]">Buka jurnal</Link></div>
+          {journals.length ? <div className="mt-5 space-y-3">{journals.map((journal) => <article key={String(journal.id)} className="rounded-2xl bg-[var(--tg-surface-muted)] p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{String(journal.topic)}</p><p className="mt-1 text-sm tg-muted">{formatDate(String(journal.journal_date))}</p></div><StatusPill value={String(journal.state)} /></div></article>)}</div> : <div className="mt-5"><EmptyState icon={BookOpenText} title="Belum ada jurnal" description="Gunakan Catat Kelas untuk membuat presensi dan jurnal sekaligus." /></div>}
         </section>
       </div>
-
-      <section className="mt-6 rounded-3xl bg-indigo-600 p-6 text-white sm:p-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-indigo-100">
-              <BookOpenText size={18} />
-              <span className="text-sm font-semibold">Prinsip Teman Guru</span>
-            </div>
-            <h2 className="mt-2 text-2xl font-bold">Selesaikan satu catatan, pakai datanya di banyak laporan.</h2>
-          </div>
-          <Link href="/record" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-white px-4 text-sm font-semibold text-indigo-700">Catat kegiatan</Link>
-        </div>
-      </section>
     </div>
   );
 }

@@ -1,0 +1,10 @@
+{
+  "repository": "hellzard/temanguru",
+  "sourceCommit": "42d714c7104e173663136130742b8a69af99b43d",
+  "sourceCommitMessage": "feat: integrate Teman Guru Hardening & Theme V2 engine",
+  "rebuildVersion": "0.4.0",
+  "rebuildDate": "2026-08-06",
+  "architecture": "guest-first local workspace with optional Supabase password auth and cloud snapshot sync",
+  "productionMutationPerformed": false,
+  "notes": "Repository rewritten locally for manual GitHub upload. Existing GitHub and Vercel resources were not modified."
+}

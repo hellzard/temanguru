@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(15);
+select plan(16);
 
 select ok(to_regclass('public.audit_events') is not null, 'audit_events exists');
 select ok(to_regclass('private.idempotency_operations') is not null, 'idempotency table exists');
@@ -40,9 +40,9 @@ select ok(
   exists (
     select 1 from pg_indexes
     where schemaname = 'public'
-      and indexname = 'inventory_loans_one_active_per_item_uidx'
+      and indexname = 'inventory_loans_item_status_idx'
   ),
-  'active inventory loan unique index exists'
+  'inventory loan status index exists'
 );
 select ok(
   exists (
@@ -50,6 +50,10 @@ select ok(
     where conname = 'inventory_loans_item_same_school_fk'
   ),
   'inventory item tenant FK exists'
+);
+select ok(
+  has_table_privilege('authenticated', 'public.inventory_items', 'SELECT'),
+  'authenticated receives base table privileges before RLS'
 );
 select ok(
   exists (

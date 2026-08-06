@@ -1,235 +1,166 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { Plus, Archive, Search, QrCode, ArrowRight } from "lucide-react";
-import { createInventoryItem, borrowItem } from "./actions";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Loader2, PackagePlus, RotateCcw, ShoppingBag } from "lucide-react";
+import { useState, useTransition } from "react";
+import { StatusPill } from "@/components/dashboard/status-pill";
+import { borrowItem, createInventoryItem, returnItem } from "./actions";
 
-const initialItemState = { success: false, message: "" };
-const initialBorrowState = { success: false, message: "" };
-
-type InventoryItem = Record<string, unknown> & {
-  id?: string;
-  name?: string;
-  code?: string;
-  condition?: string;
-  location?: string;
-  is_available?: boolean;
+export type InventoryItemView = Record<string, unknown> & {
+  quantity: number;
+  activeCount: number;
+  availableCount: number;
+  ownLoan: Record<string, unknown> | null;
+  manageableLoan: Record<string, unknown> | null;
 };
 
-export function InventoryClient({ items }: { items: InventoryItem[] }) {
-  const [pendingItem, startTransitionItem] = useTransition();
-  const [pendingBorrow, startTransitionBorrow] = useTransition();
-  
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+type ActionResult = { success: boolean; message: string };
+type InventoryAction = (previous: unknown, data: FormData) => Promise<ActionResult>;
 
-  const handleItemSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    startTransitionItem(async () => {
-      const result = await createInventoryItem(initialItemState, formData);
-      if (result.success) {
-        toast.success(result.message);
-        setIsFormOpen(false);
-      } else {
-        toast.error(result.message);
-      }
+export function InventoryClient({
+  items,
+  canManage,
+}: {
+  items: InventoryItemView[];
+  canManage: boolean;
+}) {
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function run(action: InventoryAction, data: FormData, form?: HTMLFormElement) {
+    startTransition(async () => {
+      const result = await action(null, data);
+      setMessage({ ok: result.success, text: result.message });
+      if (result.success) form?.reset();
     });
-  };
-
-  const handleBorrowSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    startTransitionBorrow(async () => {
-      const result = await borrowItem(initialBorrowState, formData);
-      if (result.success) {
-        toast.success(result.message);
-      } else {
-        toast.error(result.message);
-      }
-    });
-  };
-
-  const filteredItems = items.filter(i => 
-    (i.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) || 
-    (i.code?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-  );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-slate-950">Inventaris & Sarpras</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Katalog barang, peminjaman, dan pencetakan kode QR.
-          </p>
-        </div>
-        {!isFormOpen && (
-          <Button onClick={() => setIsFormOpen(true)}>
-            <Plus size={18} className="mr-2" />
-            Tambah Barang
-          </Button>
-        )}
+    <div>
+      <div className="mb-7">
+        <h1 className="text-3xl font-black">Inventaris</h1>
+        <p className="mt-2 tg-muted">
+          Stok dan peminjaman dikunci dalam transaksi agar jumlah tersedia selalu konsisten.
+        </p>
       </div>
 
-      {isFormOpen && (
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-950 mb-4">Input Barang Baru</h3>
-          <form onSubmit={handleItemSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="code" className="block text-sm font-semibold text-slate-800">
-                  Kode / Serial Number
-                </label>
-                <input
-                  type="text"
-                  id="code"
-                  name="code"
-                  required
-                  className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-slate-950 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
-                  placeholder="Contoh: INV-2026-001"
-                />
-              </div>
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-slate-800">
-                  Nama Barang
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-slate-950 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
-                  placeholder="Contoh: Proyektor Epson EB-X05"
-                />
-              </div>
-              <div>
-                <label htmlFor="category" className="block text-sm font-semibold text-slate-800">
-                  Kategori
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-slate-950 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 bg-white"
-                >
-                  <option value="electronics">Elektronik</option>
-                  <option value="furniture">Furnitur</option>
-                  <option value="sports">Alat Olahraga</option>
-                  <option value="books">Buku</option>
-                  <option value="other">Lainnya</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="condition" className="block text-sm font-semibold text-slate-800">
-                  Kondisi
-                </label>
-                <select
-                  id="condition"
-                  name="condition"
-                  className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-slate-950 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 bg-white"
-                >
-                  <option value="good">Baik</option>
-                  <option value="fair">Cukup/Layak</option>
-                  <option value="damaged">Rusak</option>
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="location" className="block text-sm font-semibold text-slate-800">
-                  Lokasi Penyimpanan
-                </label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-slate-950 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
-                  placeholder="Contoh: Lemari Kaca Ruang Guru"
-                />
-              </div>
-            </div>
+      {message ? (
+        <p
+          role={message.ok ? "status" : "alert"}
+          className={`mb-5 rounded-xl border p-3 text-sm ${
+            message.ok
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          {message.text}
+        </p>
+      ) : null}
 
-            <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>
-                Batal
-              </Button>
-              <Button type="submit" disabled={pendingItem}>
-                {pendingItem ? "Menyimpan..." : "Simpan Barang"}
-              </Button>
-            </div>
+      {canManage ? (
+        <section className="tg-card p-5">
+          <div className="flex items-center gap-3">
+            <PackagePlus className="text-[var(--tg-primary)]" size={21} />
+            <h2 className="font-bold">Tambah barang</h2>
+          </div>
+          <form
+            className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-6"
+            onSubmit={(event) => {
+              event.preventDefault();
+              run(createInventoryItem, new FormData(event.currentTarget), event.currentTarget);
+            }}
+          >
+            <input name="name" required placeholder="Nama barang" className="min-h-11 rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3 xl:col-span-2" />
+            <input name="code" required placeholder="Kode unik" className="min-h-11 rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" />
+            <select name="category" className="min-h-11 rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3">
+              <option value="electronics">Elektronik</option>
+              <option value="furniture">Furnitur</option>
+              <option value="sports">Olahraga</option>
+              <option value="books">Buku</option>
+              <option value="other">Lainnya</option>
+            </select>
+            <input type="number" min="1" name="quantity" defaultValue="1" aria-label="Jumlah" className="min-h-11 rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" />
+            <button disabled={pending} className="tg-primary-button">
+              {pending ? <Loader2 className="animate-spin" size={17} /> : null}
+              Simpan
+            </button>
+            <input name="location" placeholder="Lokasi penyimpanan" className="min-h-11 rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3 xl:col-span-2" />
+            <select name="condition" className="min-h-11 rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3">
+              <option value="good">Baik</option>
+              <option value="fair">Cukup</option>
+              <option value="damaged">Rusak</option>
+            </select>
           </form>
         </section>
-      )}
+      ) : null}
 
-      <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-        <Search size={20} className="ml-2 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Cari kode atau nama barang..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1 bg-transparent p-2 text-slate-900 outline-none"
-        />
-      </div>
-
-      {filteredItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 py-16 text-center">
-          <div className="grid size-12 place-items-center rounded-full bg-slate-100 text-slate-400">
-            <Archive size={24} />
-          </div>
-          <h3 className="mt-4 font-semibold text-slate-950">Data tidak ditemukan</h3>
-          <p className="mt-1 max-w-sm text-sm text-slate-500">
-            {items.length === 0 ? "Belum ada barang di inventaris sekolah." : "Coba gunakan kata kunci lain."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredItems.map((item) => (
-            <div key={item.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`grid size-10 place-items-center rounded-xl ${
-                    item.is_available ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
-                  }`}>
-                    <Archive size={20} />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">{item.code}</span>
-                    <h4 className="font-bold text-slate-900 line-clamp-1" title={item.name}>{item.name}</h4>
-                  </div>
+      {items.length ? (
+        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {items.map((item) => {
+            const loan = item.manageableLoan;
+            const unavailable = item.availableCount <= 0 || String(item.condition) === "damaged";
+            return (
+              <article key={String(item.id)} className="tg-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="grid size-11 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]">
+                    <ShoppingBag size={21} />
+                  </span>
+                  <StatusPill value={String(item.condition)} />
                 </div>
-              </div>
-              
-              <div className="mt-4 flex items-center justify-between">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                  item.condition === 'good' ? 'bg-slate-100 text-slate-700' :
-                  item.condition === 'fair' ? 'bg-amber-100 text-amber-700' :
-                  'bg-rose-100 text-rose-700'
-                }`}>
-                  Kondisi: {item.condition}
-                </span>
-                <span className="text-xs font-medium text-slate-500">{item.location || 'Lokasi tidak diatur'}</span>
-              </div>
-
-              <div className="mt-6 flex gap-2">
-                <Button variant="secondary" className="flex-1" title="Cetak Label QR">
-                  <QrCode size={16} />
-                </Button>
-                {item.is_available ? (
-                  <form onSubmit={handleBorrowSubmit} className="flex-2 w-full">
-                    <input type="hidden" name="item_id" value={item.id} />
-                    <Button type="submit" className="w-full" disabled={pendingBorrow}>
-                      <ArrowRight size={16} className="mr-1" /> Pinjam
-                    </Button>
-                  </form>
-                ) : (
-                  <Button variant="secondary" className="w-full text-slate-500" disabled>
-                    Sedang Dipinjam
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
+                <h2 className="mt-4 font-bold">{String(item.name)}</h2>
+                <p className="mt-1 text-sm tg-muted">
+                  {String(item.code)} · {String(item.location ?? "Lokasi belum diisi")}
+                </p>
+                <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
+                  <div className="rounded-xl bg-[var(--tg-surface-muted)] p-2">
+                    <dt className="tg-muted">Total</dt>
+                    <dd className="mt-1 font-black">{item.quantity}</dd>
+                  </div>
+                  <div className="rounded-xl bg-[var(--tg-surface-muted)] p-2">
+                    <dt className="tg-muted">Dipinjam</dt>
+                    <dd className="mt-1 font-black">{item.activeCount}</dd>
+                  </div>
+                  <div className="rounded-xl bg-[var(--tg-surface-muted)] p-2">
+                    <dt className="tg-muted">Tersedia</dt>
+                    <dd className="mt-1 font-black">{item.availableCount}</dd>
+                  </div>
+                </dl>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {loan ? (
+                    <button
+                      disabled={pending}
+                      onClick={() => {
+                        const data = new FormData();
+                        data.set("loan_id", String(loan.id));
+                        run(returnItem, data);
+                      }}
+                      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--tg-border)] px-3 text-sm font-bold"
+                    >
+                      <RotateCcw size={16} />
+                      {item.ownLoan ? "Kembalikan pinjaman saya" : "Tandai dikembalikan"}
+                    </button>
+                  ) : null}
+                  {!item.ownLoan ? (
+                    <button
+                      disabled={pending || unavailable}
+                      onClick={() => {
+                        const data = new FormData();
+                        data.set("item_id", String(item.id));
+                        run(borrowItem, data);
+                      }}
+                      className="tg-primary-button min-h-10 px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {unavailable ? "Tidak tersedia" : "Pinjam"}
+                    </button>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      ) : (
+        <div className="tg-card mt-6 p-8 text-center">
+          <p className="font-bold">Belum ada inventaris.</p>
+          <p className="mt-2 text-sm tg-muted">Owner atau admin dapat menambahkan barang pertama.</p>
         </div>
       )}
     </div>

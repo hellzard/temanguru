@@ -1,1 +1,0 @@
-Jalankan `/ui-browser-review` untuk perubahan saat ini. Periksa 320×568, 390×844, 768×1024, dan 1440×900; keyboard-only; reduced motion; loading/empty/error; overflow; target sentuh; form labels; focus; tabel; bottom navigation; dan offline indicators. Simpan temuan sebagai artifact, perbaiki severity tinggi/sedang, lalu ulangi pemeriksaan.

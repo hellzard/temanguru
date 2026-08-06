@@ -18,7 +18,6 @@ test-results/
 .vercel/
 supabase/.temp/
 .agent-artifacts/
-.antigravity-cache/
 
 # OS/editor
 .DS_Store

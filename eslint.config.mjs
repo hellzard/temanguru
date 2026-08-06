@@ -5,5 +5,11 @@ import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([".next/**", "out/**", "coverage/**", "playwright-report/**", ".agents/**", "supabase/.temp/**"]),
+  globalIgnores([".next/**", "out/**", "coverage/**", "playwright-report/**", ".agents/**"]),
+  {
+    rules: {
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);

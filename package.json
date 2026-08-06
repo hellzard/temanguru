@@ -1,11 +1,13 @@
 {
   "name": "temanguru",
-  "version": "0.2.0",
+  "version": "0.4.1",
   "private": true,
-  "description": "Teman Guru hybrid Antigravity starter: Next.js, Supabase SSR, PWA, tests, and agent workspace",
+  "description": "Teman Guru — guest-first workspace dengan Antigravity Autopilot, login opsional, backup lokal, dan sinkronisasi Supabase",
+  "license": "MIT",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.x"
   },
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,54 +18,53 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "verify:workspace": "node scripts/verify-hybrid-workspace.mjs",
-    "verify": "npm run verify:workspace && npm run check:secrets && npm run check:tenant-context && npm run lint && npm run typecheck && npm run test && npm run build",
-    "release:preflight": "node scripts/release-preflight.mjs",
-    "verify:core": "npm run verify:workspace && npm run check:secrets && npm run check:tenant-context && npm run release:preflight && npm run lint && npm run typecheck && npm run test && npm run build",
-    "setup": "node scripts/setup.mjs",
-    "verify:starter": "npm run check:secrets && npm run lint && npm run typecheck && npm run test && npm run build",
-    "autopilot:setup": "node scripts/autopilot-bootstrap.mjs",
-    "autopilot:status": "node -e \"const fs=require('fs');const p='.agent-artifacts/autopilot-setup-status.json';console.log(fs.existsSync(p)?fs.readFileSync(p,'utf8'):'Belum ada status autopilot.')\"",
     "check:tenant-context": "node scripts/check-membership-context.mjs",
-    "verify:full": "npm run verify && npm run test:e2e"
+    "verify:workspace": "node scripts/verify-project.mjs",
+    "verify": "npm run verify:workspace && npm run verify:guest-first && npm run check:secrets && npm run check:tenant-context && npm run lint && npm run typecheck && npm run test && npm run build",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop --no-backup",
+    "supabase:reset": "supabase db reset --local",
+    "supabase:test": "supabase test db",
+    "verify:database": "npm run supabase:reset && npm run supabase:test",
+    "verify:full": "npm run verify && npm run test:e2e",
+    "preflight": "node scripts/preflight-deploy.mjs",
+    "doctor": "node scripts/antigravity-doctor.mjs",
+    "verify:guest-first": "node scripts/verify-guest-first.mjs"
   },
   "dependencies": {
-    "@hookform/resolvers": "5.2.1",
     "@supabase/ssr": "0.12.3",
     "@supabase/supabase-js": "2.110.8",
     "clsx": "2.1.1",
-    "date-fns": "4.1.0",
-    "dexie": "4.4.4",
-    "exceljs": "4.4.0",
     "idb": "8.0.3",
     "lucide-react": "1.27.0",
     "next": "16.2.11",
-    "papaparse": "5.5.4",
-    "pdf-lib": "1.17.1",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "react-hook-form": "7.62.0",
-    "recharts": "3.1.2",
-    "sonner": "2.0.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sharp": "0.35.3",
     "tailwind-merge": "3.3.1",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@playwright/test": "1.62.0",
+    "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "4.1.11",
     "@testing-library/jest-dom": "6.6.4",
     "@testing-library/react": "16.3.0",
-    "@types/node": "24.2.0",
-    "@types/papaparse": "5.5.2",
-    "@types/react": "19.1.10",
-    "@types/react-dom": "19.1.7",
+    "@types/node": "22.20.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "eslint": "9.33.0",
     "eslint-config-next": "16.2.11",
     "jsdom": "26.1.0",
-    "postcss": "8.5.6",
+    "postcss": "8.5.23",
     "prettier": "3.6.2",
+    "supabase": "2.111.0",
     "tailwindcss": "4.1.11",
     "typescript": "5.9.2",
-    "vitest": "3.2.4"
-  }
+    "vitest": "3.2.7"
+  },
+  "overrides": {
+    "postcss": "8.5.23",
+    "sharp": "0.35.3"
+  },
+  "allowScripts": {}
 }

@@ -1,0 +1,20 @@
+/goal
+
+Jalankan workflow `/temanguru-autopilot` sampai selesai.
+
+Saya pengguna awam. Jangan meminta saya mengetik command, mengedit file, mencari error, memindahkan folder, atau mengatur konfigurasi teknis. Kerjakan melalui editor, terminal, Browser Agent, GitHub, Supabase, dan Vercel.
+
+Pertahankan guest-first:
+- `/workspace` tanpa login;
+- data tamu lokal;
+- backup/restore JSON;
+- login opsional email+sandi;
+- lupa sandi OTP email;
+- sinkronisasi antarperangkat;
+- tidak ada magic-link login wajib.
+
+Kerjakan audit, perbaikan, dependency, Docker/Supabase lokal, migration, pgTAP/RLS, lint, typecheck, unit, build, Playwright, audit dependency, GitHub Actions, Vercel Preview, browser QA, dan production deployment.
+
+Jangan selesai bila CI/test merah. Jangan force-push atau mengubah database production tanpa backup, preview lulus, dan persetujuan saya.
+
+Minta saya hanya untuk login/authorization, Docker, biaya, perubahan database production, atau production deploy. Perbarui `AUTOPILOT_STATUS.md` setiap fase.

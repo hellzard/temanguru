@@ -8,91 +8,60 @@ import { createClient } from "@/lib/supabase/server";
 
 const createItemSchema = z.object({
   name: z.string().trim().min(1, "Nama barang wajib diisi").max(180),
-  code: z.string().trim().min(1, "Kode/Nomor seri wajib diisi").max(100),
+  code: z.string().trim().min(1, "Kode barang wajib diisi").max(100),
   category: z.enum(["electronics", "furniture", "sports", "books", "other"]),
   location: z.string().trim().max(180).optional(),
   condition: z.enum(["good", "fair", "damaged"]),
+  quantity: z.coerce.number().int().min(1).max(100000),
 });
 
-export async function createInventoryItem(_prevState: unknown, formData: FormData) {
+export async function createInventoryItem(_previous: unknown, formData: FormData) {
   try {
     const context = await requireActiveSchool();
-    if (!["owner", "admin"].includes(context.active.role)) {
-      return { success: false, message: "Hanya owner atau admin yang dapat menambah inventaris." };
-    }
-
-    const parsed = createItemSchema.safeParse({
-      name: formData.get("name"),
-      code: formData.get("code"),
-      category: formData.get("category") || "other",
-      location: formData.get("location") || undefined,
-      condition: formData.get("condition") || "good",
-    });
-    if (!parsed.success) {
-      return { success: false, message: parsed.error.issues[0].message };
-    }
-
+    if (!["owner", "admin"].includes(context.active.role)) return { success: false, message: "Hanya owner atau admin yang dapat menambah inventaris." };
+    const parsed = createItemSchema.safeParse({ name: formData.get("name"), code: formData.get("code"), category: formData.get("category") || "other", location: formData.get("location") || undefined, condition: formData.get("condition") || "good", quantity: formData.get("quantity") || 1 });
+    if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
     const supabase = await createClient();
-    const { error } = await supabase.from("inventory_items").insert({
-      school_id: context.active.schoolId,
-      name: parsed.data.name,
-      code: parsed.data.code,
-      category: parsed.data.category,
-      location: parsed.data.location || null,
-      condition: parsed.data.condition,
-      is_available: true,
-    });
-
-    if (error?.code === "23505") {
-      return { success: false, message: "Kode barang sudah terdaftar." };
-    }
-    if (error) {
-      console.error("Create inventory item failed", { code: error.code });
-      return { success: false, message: "Barang belum berhasil disimpan." };
-    }
-
+    const { error } = await supabase.from("inventory_items").insert({ school_id: context.active.schoolId, ...parsed.data, location: parsed.data.location || null, is_available: parsed.data.condition !== "damaged" });
+    if (error) return { success: false, message: error.code === "23505" ? "Kode barang sudah terdaftar." : "Barang belum berhasil disimpan." };
     revalidatePath("/operations/inventory");
     return { success: true, message: "Barang berhasil ditambahkan." };
   } catch (error) {
-    console.error("Inventory context failed", error);
+    console.error("createInventoryItem", error);
     return { success: false, message: "Ruang kerja sekolah belum dapat ditentukan." };
   }
 }
 
-const loanSchema = z.object({
-  item_id: z.string().uuid(),
-  idempotency_key: z.string().uuid().optional(),
-});
-
-export async function borrowItem(_prevState: unknown, formData: FormData) {
+export async function borrowItem(_previous: unknown, formData: FormData) {
   try {
     await requireActiveSchool();
-    const parsed = loanSchema.safeParse({
-      item_id: formData.get("item_id"),
-      idempotency_key: formData.get("idempotency_key") || undefined,
-    });
-    if (!parsed.success) return { success: false, message: "Data peminjaman tidak valid." };
-
+    const itemId = z.string().uuid().safeParse(formData.get("item_id"));
+    if (!itemId.success) return { success: false, message: "Barang tidak valid." };
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("borrow_inventory_item", {
-      p_item_id: parsed.data.item_id,
-      p_idempotency_key: parsed.data.idempotency_key ?? randomUUID(),
-      p_due_date: null,
-    });
-
+    const { error } = await supabase.rpc("borrow_inventory_item", { p_item_id: itemId.data, p_idempotency_key: randomUUID(), p_due_date: null });
     if (error) {
-      console.error("Borrow inventory failed", { code: error.code });
-      return { success: false, message: error.message || "Barang belum dapat dipinjam." };
+      console.error("borrow_inventory_item", { code: error.code });
+      return { success: false, message: error.message.includes("tidak tersedia") ? "Barang sedang tidak tersedia." : "Peminjaman belum berhasil." };
     }
-
     revalidatePath("/operations/inventory");
-    return {
-      success: true,
-      message: "Berhasil meminjam barang.",
-      loanId: typeof data === "string" ? data : undefined,
-    };
+    return { success: true, message: "Barang berhasil dipinjam." };
   } catch (error) {
-    console.error("Borrow context failed", error);
-    return { success: false, message: "Ruang kerja sekolah belum dapat ditentukan." };
+    console.error("borrowItem", error);
+    return { success: false, message: "Peminjaman belum berhasil." };
+  }
+}
+
+export async function returnItem(_previous: unknown, formData: FormData) {
+  try {
+    const loanId = z.string().uuid().safeParse(formData.get("loan_id"));
+    if (!loanId.success) return { success: false, message: "Peminjaman tidak valid." };
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("return_inventory_item", { p_loan_id: loanId.data });
+    if (error) return { success: false, message: "Pengembalian belum berhasil." };
+    revalidatePath("/operations/inventory");
+    return { success: true, message: "Barang berhasil dikembalikan." };
+  } catch (error) {
+    console.error("returnItem", error);
+    return { success: false, message: "Pengembalian belum berhasil." };
   }
 }

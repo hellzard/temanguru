@@ -1,5 +1,5 @@
 # Security Policy
 
-Do not open a public issue containing vulnerabilities, tokens, private school data, or student information. Use GitHub private security advisories after replacing `OWNER/REPO` in repository settings.
+Laporkan kerentanan secara privat melalui GitHub Private Vulnerability Reporting pada repository ini. Jangan memasukkan token, screenshot data sekolah, email pengguna, atau data murid ke issue publik.
 
-Rotate any exposed credential immediately. Include affected version, minimal reproduction with synthetic data, impact, and suggested fix.
+Sertakan versi/commit, langkah reproduksi dengan data sintetis, dampak, dan saran mitigasi. Segera rotasi credential yang pernah terekspos.

@@ -46,8 +46,9 @@ const formSchema = z.object({
 }).transform((value, context) => {
   const result = classRecordSchema.safeParse(value);
   if (!result.success) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const issue of result.error.issues) context.addIssue(issue as any);
+    for (const issue of result.error.issues) {
+      context.addIssue({ code: "custom", message: issue.message, path: issue.path });
+    }
     return z.NEVER;
   }
   return result.data;
@@ -100,7 +101,7 @@ async function persistClassRecord(input: ClassRecordInput) {
 
   if (error) {
     console.error("Save class record RPC failed", { code: error.code });
-    return { error: error.message || "Catatan kelas belum berhasil disimpan." };
+    return { error: "Catatan kelas belum berhasil disimpan. Periksa penugasan dan coba kembali." };
   }
 
   revalidatePath("/dashboard");

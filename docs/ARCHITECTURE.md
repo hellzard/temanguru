@@ -1,72 +1,31 @@
-# Architecture
+# Arsitektur
 
-## System overview
+## Jalur guest-first
 
-```text
-Browser / Installed PWA
-  ├─ Next.js Server Components and Client Islands
-  ├─ IndexedDB drafts/outbox (phase 2)
-  └─ Service worker: static shell only
-          │
-          ▼
-Vercel / Next.js 16
-  ├─ Server Actions and Route Handlers
-  ├─ Supabase SSR session handling via proxy.ts
-  └─ Export and validation services
-          │
-          ▼
-Supabase
-  ├─ Auth
-  ├─ Postgres + Row Level Security
-  ├─ Storage for limited documents
-  └─ Realtime only where justified
-```
+- `/workspace` adalah PWA client-side yang tidak memerlukan sesi.
+- `WorkspaceProvider` memuat dan menyimpan satu `LocalWorkspace`.
+- IndexedDB `temanguru-local-workspace` menjadi storage utama; localStorage hanya fallback.
+- Backup manual menggunakan envelope JSON tervalidasi.
+- Setelah login, snapshot yang sama dapat di-upsert ke Supabase.
 
-## Rendering rules
+## Jalur akun dan sekolah
 
-- Server Components fetch private data.
-- Client Components handle forms, browser storage, charts, and interactive navigation.
-- No private data is statically generated or stored in public caches.
-- Auth refresh occurs in root `proxy.ts`.
+- Supabase Auth menangani email+sandi dan recovery OTP.
+- `user_workspace_snapshots` menangani sinkronisasi ruang kerja pribadi.
+- Modul sekolah multi-user lama tetap memakai server component/action, active-school context, RLS, dan transaksi PostgreSQL.
+- Route sekolah tetap membutuhkan session; pengguna tanpa session diarahkan ke `/workspace`.
 
-## Domain boundaries
+## Konflik sinkronisasi
 
-- Identity: profiles and sessions.
-- Tenancy: schools and school_members.
-- Academic setup: academic_years, classes, subjects, teaching_assignments, schedules.
-- Daily teaching: attendance_sessions, attendance_records, teaching_journals.
-- Assessment: assessments, assessment_scores, remedial_attempts.
-- Support: student_notes, export_jobs, document_templates.
+Strategi saat ini adalah snapshot last-write-wins:
 
-## Mutation pipeline
+- Ruang kerja lokal kosong mengambil versi cloud.
+- Versi dengan `updatedAt` lebih baru menjadi sumber sinkronisasi.
+- Tombol status akun dapat memicu sinkronisasi ulang.
+- Restore cloud mempertahankan timestamp sumber agar tidak langsung diunggah balik.
 
-```text
-UI form
-→ client validation
-→ Server Action / Route Handler
-→ Zod validation
-→ authenticated user lookup
-→ membership/role check
-→ Postgres mutation under RLS
-→ domain result
-→ revalidate relevant path/tag
-→ success/error UI
-```
+Untuk kerja kolaboratif simultan, gunakan modul sekolah multi-user, bukan snapshot workspace pribadi.
 
-## Offline strategy
+## PWA
 
-Phase 1 provides installability and an offline shell. Phase 2 adds IndexedDB drafts and outbox for attendance/journals.
-
-- Server remains source of truth.
-- Mutations carry an idempotency key.
-- Outbox entries contain minimal data and user/school scope.
-- Conflicts require an explicit user choice.
-- Logout clears local private drafts.
-
-## AI boundary
-
-Optional provider adapter only after core product stabilizes. Redact names and IDs before sending. The server controls prompt templates, rate limits, allowed fields, audit metadata, and provider keys. Output is a draft requiring teacher review.
-
-## Scalability
-
-Free-tier pilot: one Supabase project, Vercel Hobby, client-side small exports. When limits approach, move large report generation to queued jobs and upgrade deliberately.
+Service worker menyimpan shell `/workspace`, halaman offline, dan aset ikon. Route sekolah/API privat tidak dimasukkan ke cache. Data ruang kerja tetap berada di IndexedDB dan bukan di Cache Storage.

@@ -1,7 +1,0 @@
-# Agent must generate .env.example with variable names only.
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-
-# Never place real values here.
-# Server-only variables must never use NEXT_PUBLIC_.

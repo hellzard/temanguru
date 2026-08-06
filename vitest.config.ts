@@ -3,10 +3,10 @@ import path from "node:path";
 
 export default defineConfig({
   test: {
+    exclude: ["tests/e2e/**", "node_modules/**"],
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
     coverage: { reporter: ["text", "html"] },
-    exclude: ["tests/e2e/**", "node_modules/**"],
   },
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
 });

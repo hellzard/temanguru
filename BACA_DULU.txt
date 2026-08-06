@@ -1,0 +1,19 @@
+TEMAN GURU v0.4.1 — ANTIGRAVITY AUTOPILOT
+
+Pengguna awam: baca ANTIGRAVITY_BACA_DULU.txt dan jalankan /temanguru-autopilot.
+
+TEMAN GURU v0.4 — BACA DULU
+
+Versi ini dapat dipakai TANPA LOGIN melalui /workspace.
+- Data tanpa login tersimpan di browser/perangkat.
+- Backup tanpa login dilakukan dengan file JSON.
+- Login email+sandi bersifat opsional untuk sinkronisasi antarperangkat.
+- Lupa sandi memakai OTP yang dikirim ke email.
+
+URUTAN PEMASANGAN:
+1. Baca START_HERE.md
+2. Ikuti docs/INSTALL_STEP_BY_STEP.md dari Bagian A sampai J
+3. Centang INSTALL_CHECKLIST.txt
+
+Jangan upload file ZIP ke GitHub sebagai satu file. Ekstrak ZIP, buka folder temanguru, lalu upload seluruh ISINYA.
+Jangan pernah upload .env.local, password database, secret key, atau service-role key.

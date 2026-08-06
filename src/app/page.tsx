@@ -1,47 +1,81 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, CheckCircle2, ClipboardCheck, FileSpreadsheet, WifiOff } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Cloud,
+  DatabaseBackup,
+  HardDrive,
+  KeyRound,
+  LockKeyhole,
+  WifiOff,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
 
+const choices = [
+  {
+    icon: HardDrive,
+    title: "Pakai tanpa login",
+    text: "Semua data disimpan di perangkat. Cocok untuk mencoba, penggunaan pribadi, dan kondisi internet terbatas.",
+    action: "Buka ruang kerja lokal",
+    href: "/workspace",
+    primary: true,
+  },
+  {
+    icon: Cloud,
+    title: "Login untuk sinkron",
+    text: "Masuk memakai email dan kata sandi agar backup cloud dapat dibuka kembali di perangkat lain.",
+    action: "Masuk atau daftar",
+    href: "/login?next=/workspace",
+    primary: false,
+  },
+];
+
 const features = [
-  { icon: ClipboardCheck, title: "Presensi cepat", text: "Semua hadir secara default, ubah hanya pengecualian." },
-  { icon: BookOpenCheck, title: "Jurnal terhubung", text: "Jadwal, kelas, mata pelajaran, dan presensi dapat mengisi konteks otomatis." },
-  { icon: FileSpreadsheet, title: "Ekspor terbuka", text: "Unduh CSV dan laporan tanpa mengunci data di satu platform." },
-  { icon: WifiOff, title: "Tahan koneksi lemah", text: "PWA dan draf lokal dirancang untuk kondisi internet tidak stabil." },
+  { icon: WifiOff, title: "Tetap berjalan offline", text: "Kelas, murid, presensi, jurnal, nilai, dokumen, agenda, dan inventaris tersimpan lokal." },
+  { icon: DatabaseBackup, title: "Backup manual", text: "Unduh satu file JSON dan pulihkan kapan saja tanpa akun." },
+  { icon: LockKeyhole, title: "Akun bersifat pilihan", text: "Login tidak mengunci fitur. Akun hanya menambah sinkronisasi antarperangkat." },
+  { icon: KeyRound, title: "Pemulihan dengan OTP", text: "Lupa sandi menggunakan kode sekali pakai yang dikirim ke email, bukan magic link." },
 ];
 
 export default function HomePage() {
   return (
-    <main className="min-h-dvh bg-[radial-gradient(circle_at_top_left,#e0e7ff,transparent_35%),linear-gradient(#ffffff,#f7f8fc)]">
+    <main className="min-h-dvh">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
         <Logo />
-        <Link href="/login" className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">Masuk</Link>
+        <div className="flex items-center gap-2">
+          <Link href="/workspace" className="hidden min-h-11 items-center rounded-xl px-4 text-sm font-semibold tg-muted hover:bg-[var(--tg-surface-muted)] sm:inline-flex">Tanpa login</Link>
+          <Link href="/login?next=/workspace" className="tg-primary-button px-4 text-sm">Masuk</Link>
+        </div>
       </header>
-      <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-10 sm:px-6 sm:pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-8 lg:pb-24">
-        <div>
-          <p className="inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">Starter terbuka untuk prototipe dan pilot</p>
-          <h1 className="mt-6 max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">Catat sekali. Jurnal, nilai, dan laporan ikut rapi.</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">Teman Guru mendampingi guru mengelola pekerjaan harian tanpa mengisi data yang sama berkali-kali. Bukan pengganti sistem resmi—melainkan ruang kerja yang lebih ringan dan rapi.</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/dashboard" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">Lihat demo dashboard <ArrowRight size={18} /></Link>
-            <a href="#fitur" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 font-semibold text-slate-800 hover:bg-slate-50">Jelajahi fitur</a>
-          </div>
-          <ul className="mt-8 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-            {["Mobile-first", "Data murid minimum", "Ekspor CSV", "Tanpa AI pada fase awal"].map((item) => <li key={item} className="flex items-center gap-2"><CheckCircle2 size={18} className="text-emerald-600" />{item}</li>)}
-          </ul>
+
+      <section className="mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 sm:pt-16 lg:px-8 lg:pb-24">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="inline-flex rounded-full border border-[var(--tg-border)] bg-[var(--tg-surface-alpha)] px-3 py-1 text-sm font-bold text-[var(--tg-primary)]">Login opsional · local-first</p>
+          <h1 className="mt-6 text-4xl font-black tracking-tight sm:text-6xl">Pakai langsung. Login hanya saat kamu butuh sinkronisasi.</h1>
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 tg-muted">Teman Guru dapat dibuka tanpa akun. Data tersimpan otomatis di perangkat, dapat dibackup manual, dan bisa dipindahkan antarperangkat setelah login dengan email dan kata sandi.</p>
         </div>
-        <div className="rounded-[2rem] border border-white/80 bg-white/80 p-3 shadow-2xl shadow-indigo-200/40 backdrop-blur">
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 sm:p-6">
-            <div className="flex items-center justify-between"><div><p className="text-sm text-slate-500">Selamat malam, Bu Rina</p><p className="mt-1 text-xl font-bold text-slate-950">Kegiatan hari ini</p></div><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">3 kelas</span></div>
-            <div className="mt-5 space-y-3">
-              {[['07.00','VIII A','Presensi selesai'],['09.00','VIII B','Isi presensi'],['11.00','VII C','Belum dimulai']].map(([time, cls, state], index) => <div key={cls} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4"><span className="text-sm font-bold text-indigo-700">{time}</span><div className="min-w-0 flex-1"><p className="font-semibold text-slate-950">{cls} · Matematika</p><p className="text-sm text-slate-500">{state}</p></div><span className={`size-3 rounded-full ${index === 0 ? 'bg-emerald-500' : index === 1 ? 'bg-amber-500' : 'bg-slate-300'}`} /></div>)}
-            </div>
-          </div>
+
+        <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-2">
+          {choices.map(({ icon: Icon, title, text, action, href, primary }) => (
+            <article key={title} className="tg-card flex flex-col p-6 text-left">
+              <span className="grid size-12 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><Icon size={24} /></span>
+              <h2 className="mt-5 text-xl font-black">{title}</h2>
+              <p className="mt-2 flex-1 text-sm leading-6 tg-muted">{text}</p>
+              <Link href={href} className={`mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 font-bold ${primary ? "bg-[var(--tg-primary)] text-white" : "border border-[var(--tg-border)] bg-[var(--tg-surface)]"}`}>{action}<ArrowRight size={18} /></Link>
+            </article>
+          ))}
         </div>
+
+        <ul className="mx-auto mt-8 grid max-w-4xl gap-3 text-sm sm:grid-cols-2">
+          {["Tidak wajib membuat akun", "Email + kata sandi", "OTP untuk lupa sandi", "Backup JSON manual"].map((item) => <li key={item} className="flex items-center gap-2"><CheckCircle2 size={18} className="text-emerald-600" />{item}</li>)}
+        </ul>
       </section>
-      <section id="fitur" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="max-w-2xl"><p className="text-sm font-bold text-indigo-700">Dibangun dari alur kerja guru</p><h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Bukan dashboard yang hanya penuh grafik.</h2><p className="mt-3 text-slate-600">Setiap bagian harus membantu guru mengambil tindakan berikutnya.</p></div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{features.map(({ icon: Icon, title, text }) => <article key={title} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid size-11 place-items-center rounded-2xl bg-indigo-50 text-indigo-700"><Icon size={22} /></span><h3 className="mt-5 font-bold text-slate-950">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{text}</p></article>)}</div>
+
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{features.map(({ icon: Icon, title, text }) => <article key={title} className="tg-card p-5"><Icon size={22} className="text-[var(--tg-primary)]" /><h3 className="mt-4 font-black">{title}</h3><p className="mt-2 text-sm leading-6 tg-muted">{text}</p></article>)}</div>
       </section>
+
+      <footer className="border-t border-[var(--tg-border)] px-4 py-8 text-sm tg-muted"><div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><p>© {new Date().getFullYear()} Teman Guru.</p><div className="flex gap-4"><Link href="/privacy">Privasi</Link><Link href="/terms">Ketentuan</Link><Link href="/workspace">Mulai</Link></div></div></footer>
     </main>
   );
 }

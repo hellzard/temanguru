@@ -251,6 +251,12 @@ begin
     raise exception 'Penugasan tidak ditemukan';
   end if;
 
+  -- Serialize all edits for the same class session, even when their content
+  -- produces different idempotency keys.
+  perform pg_advisory_xact_lock(
+    hashtextextended(p_assignment_id::text || p_session_date::text || 'class_session', 0)
+  );
+
   if not private.is_active_school_member(p_school_id) then
     raise exception 'Keanggotaan aktif diperlukan';
   end if;

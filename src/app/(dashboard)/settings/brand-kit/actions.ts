@@ -1,68 +1,40 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { redirectWithMessage } from "@/lib/action-result";
+import { requireActiveSchool } from "@/lib/schools/active-school";
+import { createClient } from "@/lib/supabase/server";
 
-export async function updateBrandKit(formData: FormData) {
+const schema = z.object({
+  school_name: z.string().trim().max(180).optional(),
+  address: z.string().trim().max(1000).optional(),
+  phone: z.string().trim().max(40).optional(),
+  email: z.union([z.literal(""), z.string().email()]).optional(),
+  website: z.union([z.literal(""), z.string().url()]).optional(),
+  primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  secondary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+});
+
+export async function saveBrandKit(formData: FormData) {
+  const parsed = schema.safeParse({
+    school_name: formData.get("school_name"),
+    address: formData.get("address"),
+    phone: formData.get("phone"),
+    email: formData.get("email"),
+    website: formData.get("website"),
+    primary_color: formData.get("primary_color"),
+    secondary_color: formData.get("secondary_color"),
+  });
+  if (!parsed.success) redirectWithMessage("/settings/brand-kit", "error", parsed.error.issues[0].message);
+
+  const context = await requireActiveSchool();
+  if (!["owner", "admin"].includes(context.active.role)) redirectWithMessage("/settings/brand-kit", "error", "Hanya owner atau admin yang dapat mengubah identitas sekolah.");
   const supabase = await createClient();
-  
-  // Get active school
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Unauthenticated" };
-
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
-  if (!profile) return { error: "Profile not found" };
-
-  // For this MVP, we assume the user is only in one school, so we fetch their first school
-  const { data: members } = await supabase.from("school_members").select("school_id").eq("user_id", profile.id).limit(1);
-  if (!members || members.length === 0) return { error: "Tidak memiliki akses ke sekolah." };
-  
-  const schoolId = members[0].school_id;
-
-  const primaryColor = formData.get("primary_color") as string;
-  const schoolName = formData.get("school_name") as string;
-  const address = formData.get("address") as string;
-  const contact = formData.get("contact") as string;
-  
-  const file = formData.get("logo") as File | null;
-  let logoUrl = formData.get("current_logo_url") as string;
-
-  if (file && file.size > 0) {
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${schoolId}/logo-${Date.now()}.${fileExt}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from("teman-guru-assets")
-      .upload(filePath, file, { upsert: true });
-      
-    if (uploadError) {
-      return { error: `Gagal mengunggah logo: ${uploadError.message}` };
-    }
-    
-    // Actually the bucket is private, but for MVP we might just store the path and use signed URLs or just rely on supabase.storage later.
-    // Wait, if it's private, we should save the filePath and then generate signed URLs later.
-    logoUrl = filePath;
-  }
-
-  const letterheadConfig = {
-    schoolName,
-    address,
-    contact
-  };
-
-  const { error: upsertError } = await supabase
-    .from("brand_kits")
-    .upsert({
-      school_id: schoolId,
-      logo_url: logoUrl,
-      primary_color: primaryColor,
-      letterhead_config: letterheadConfig
-    }, { onConflict: "school_id" });
-
-  if (upsertError) {
-    return { error: `Gagal menyimpan brand kit: ${upsertError.message}` };
-  }
-
+  const payload = Object.fromEntries(Object.entries(parsed.data).map(([key, value]) => [key, value || null]));
+  const { error } = await supabase.from("brand_kits").upsert({ school_id: context.active.schoolId, ...payload }, { onConflict: "school_id" });
+  if (error) redirectWithMessage("/settings/brand-kit", "error", "Brand kit belum berhasil disimpan.");
   revalidatePath("/settings/brand-kit");
-  return { success: true };
+  revalidatePath("/documents");
+  redirectWithMessage("/settings/brand-kit", "success", "Brand kit sekolah berhasil disimpan.");
 }

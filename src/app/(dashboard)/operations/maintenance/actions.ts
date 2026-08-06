@@ -1,49 +1,5 @@
 "use server";
-
-import { requireActiveSchool } from "@/lib/schools/active-school";
-import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { z } from "zod";
-
-const createTicketSchema = z.object({
-  title: z.string().min(1, "Judul laporan wajib diisi"),
-  description: z.string().optional(),
-  item_id: z.string().uuid().optional().or(z.literal("")),
-});
-
-export async function createMaintenanceTicket(prevState: unknown, formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, message: "Unauthorized" };
-
-  const { active: member } = await requireActiveSchool();
-
-  if (!member) return { success: false, message: "User not in a school" };
-
-  const parsed = createTicketSchema.safeParse({
-    title: formData.get("title"),
-    description: formData.get("description"),
-    item_id: formData.get("item_id"),
-  });
-
-  if (!parsed.success) return { success: false, message: parsed.error.issues[0].message };
-
-  const item_id = parsed.data.item_id && parsed.data.item_id.trim() !== "" ? parsed.data.item_id : null;
-
-  const { error } = await supabase.from("maintenance_tickets").insert({
-    school_id: member.schoolId,
-    reporter_id: member.id,
-    item_id,
-    title: parsed.data.title,
-    description: parsed.data.description,
-    status: "open"
-  });
-
-  if (error) {
-    console.error("Create ticket error:", error);
-    return { success: false, message: "Gagal membuat laporan" };
-  }
-
-  revalidatePath("/operations/maintenance");
-  return { success: true, message: "Laporan kerusakan berhasil dikirim" };
-}
+import { revalidatePath } from "next/cache";import { z } from "zod";import { redirectWithMessage } from "@/lib/action-result";import { requireActiveSchool } from "@/lib/schools/active-school";import { createClient } from "@/lib/supabase/server";
+const schema=z.object({item_id:z.string().uuid().optional(),title:z.string().trim().min(2).max(220),description:z.string().trim().min(2).max(3000),priority:z.enum(['low','normal','high','urgent'])});
+export async function createMaintenanceTicket(formData:FormData){const parsed=schema.safeParse({item_id:formData.get('item_id')||undefined,title:formData.get('title'),description:formData.get('description'),priority:formData.get('priority')||'normal'});if(!parsed.success)redirectWithMessage('/operations/maintenance','error',parsed.error.issues[0].message);const context=await requireActiveSchool();const supabase=await createClient();const{error}=await supabase.from('maintenance_tickets').insert({school_id:context.active.schoolId,reporter_id:context.active.id,item_id:parsed.data.item_id||null,title:parsed.data.title,description:parsed.data.description,priority:parsed.data.priority});if(error)redirectWithMessage('/operations/maintenance','error','Laporan belum berhasil disimpan.');revalidatePath('/operations/maintenance');redirectWithMessage('/operations/maintenance','success','Laporan pemeliharaan berhasil dibuat.');}
+export async function resolveMaintenanceTicket(formData:FormData){const id=z.string().uuid().safeParse(formData.get('id'));if(!id.success)redirectWithMessage('/operations/maintenance','error','Tiket tidak valid.');const context=await requireActiveSchool();if(!['owner','admin'].includes(context.active.role))redirectWithMessage('/operations/maintenance','error','Hanya owner atau admin yang dapat menyelesaikan tiket.');const note=z.string().trim().max(2000).parse(String(formData.get('resolution_note')??''));const supabase=await createClient();const{error}=await supabase.from('maintenance_tickets').update({status:'resolved',resolution_note:note||null,resolved_at:new Date().toISOString()}).eq('id',id.data).eq('school_id',context.active.schoolId);if(error)redirectWithMessage('/operations/maintenance','error','Tiket belum dapat diselesaikan.');revalidatePath('/operations/maintenance');redirectWithMessage('/operations/maintenance','success','Tiket ditandai selesai.');}

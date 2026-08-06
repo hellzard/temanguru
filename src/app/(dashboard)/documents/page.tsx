@@ -1,96 +1,28 @@
-import { PageHeader } from "@/components/dashboard/page-header";
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, FileText, LayoutTemplate } from "lucide-react";
+import { FilePlus2, FileText } from "lucide-react";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { FormMessage } from "@/components/dashboard/form-message";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { StatusPill } from "@/components/dashboard/status-pill";
+import { SubmitButton } from "@/components/dashboard/submit-button";
+import { firstParam } from "@/lib/action-result";
+import { formatDate } from "@/lib/format";
+import { requireActiveSchool } from "@/lib/schools/active-school";
+import { createClient } from "@/lib/supabase/server";
+import { createDocument, finalizeDocument } from "./actions";
 
-export const metadata = { title: "Dokumen & Surat" };
+export const metadata = { title: "Dokumen" };
 
-export default async function DocumentsPage() {
+export default async function DocumentsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
+  const context = await requireActiveSchool();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const [{ data: documents, error: documentError }, { data: templates, error: templateError }] = await Promise.all([
+    supabase.from("school_documents").select("id,title,document_number,status,created_at,finalized_at,created_by").eq("school_id", context.active.schoolId).order("created_at", { ascending: false }),
+    supabase.from("document_templates").select("id,name").eq("school_id", context.active.schoolId).eq("is_active", true).order("name"),
+  ]);
+  if (documentError || templateError) throw documentError ?? templateError;
+  const rows = (documents ?? []) as Array<Record<string, unknown>>;
 
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
-  if (!profile) redirect("/login");
-
-  const { data: members } = await supabase.from("school_members").select("school_id, role").eq("user_id", profile.id).limit(1);
-  if (!members || members.length === 0) return <div>Anda tidak memiliki sekolah aktif.</div>;
-  
-  const schoolId = members[0].school_id;
-  const isAdmin = members[0].role === 'admin' || members[0].role === 'owner';
-
-  const { data: documents } = await supabase
-    .from("school_documents")
-    .select("id, title, status, created_at, document_number")
-    .eq("school_id", schoolId)
-    .order("created_at", { ascending: false });
-
-  return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader 
-          title="Dokumen & Surat" 
-          description="Buat dan kelola surat resmi, SK, dan dokumen sekolah lainnya." 
-        />
-        <div className="flex items-center gap-3">
-          {isAdmin && (
-            <Link 
-              href="/documents/templates"
-              className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-            >
-              <LayoutTemplate size={20} />
-              Templat
-            </Link>
-          )}
-          <Link 
-            href="/documents/new"
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-          >
-            <Plus size={20} />
-            Buat Dokumen
-          </Link>
-        </div>
-      </div>
-
-      <div className="mt-8 rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        {documents && documents.length > 0 ? (
-          <ul className="divide-y divide-slate-100">
-            {documents.map((doc: Record<string, unknown>) => (
-              <li key={doc.id as string}>
-                <Link href={`/documents/${doc.id as string}`} className="flex items-center justify-between p-6 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-start gap-4">
-                    <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600">
-                      <FileText size={20} />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">{doc.title as string}</h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {(doc.document_number as string) || "Belum ada nomor"} • {new Date(doc.created_at as string).toLocaleDateString("id-ID")}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                      doc.status === 'finalized' ? 'bg-green-50 text-green-700 ring-green-600/20' : 
-                      doc.status === 'draft' ? 'bg-slate-50 text-slate-700 ring-slate-600/20' :
-                      'bg-amber-50 text-amber-700 ring-amber-600/20'
-                    }`}>
-                      {(doc.status as string).toUpperCase()}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="py-16 text-center">
-            <FileText className="mx-auto size-12 text-slate-300" />
-            <h3 className="mt-4 text-sm font-bold text-slate-900">Belum ada dokumen</h3>
-            <p className="mt-1 text-sm text-slate-500">Buat dokumen pertama Anda menggunakan templat yang tersedia.</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <div><PageHeader title="Dokumen Studio" description="Buat draf surat dan arsip sekolah. Tanda tangan dan stempel disimpan terpisah di storage privat." /><div className="mt-7 grid gap-6 xl:grid-cols-[.75fr_1.25fr]"><section className="tg-card p-5"><div className="flex items-center gap-3"><FilePlus2 size={21} className="text-[var(--tg-primary)]" /><h2 className="font-bold">Dokumen baru</h2></div><form action={createDocument} className="mt-5 space-y-4"><FormMessage error={firstParam(params.error)} success={firstParam(params.success)} /><label className="block text-sm font-bold">Judul<input name="title" required className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" /></label><label className="block text-sm font-bold">Nomor dokumen<input name="document_number" className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3" /></label><label className="block text-sm font-bold">Templat<select name="template_id" className="mt-2 min-h-11 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] px-3"><option value="">Tanpa templat</option>{((templates ?? []) as Array<Record<string, unknown>>).map((item) => <option key={String(item.id)} value={String(item.id)}>{String(item.name)}</option>)}</select></label><label className="block text-sm font-bold">Isi awal<textarea name="body" rows={7} maxLength={20000} className="mt-2 w-full rounded-xl border border-[var(--tg-border)] bg-[var(--tg-surface)] p-3" /></label><SubmitButton>Buat draf</SubmitButton></form></section><section>{rows.length ? <div className="space-y-3">{rows.map((item) => <article key={String(item.id)} className="tg-card p-5"><div className="flex flex-col gap-4 sm:flex-row sm:items-start"><span className="grid size-11 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--tg-primary)_12%,transparent)] text-[var(--tg-primary)]"><FileText size={21} /></span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className="font-bold">{String(item.title)}</h2><StatusPill value={String(item.status)} /></div><p className="mt-1 text-sm tg-muted">{item.document_number ? String(item.document_number) : "Tanpa nomor"} · {formatDate(String(item.created_at))}</p><div className="mt-4 flex flex-wrap gap-2"><Link href={`/documents/${String(item.id)}`} className="inline-flex min-h-10 items-center rounded-xl border border-[var(--tg-border)] px-3 text-sm font-bold">Buka & cetak</Link>{item.status !== "finalized" ? <form action={finalizeDocument}><input type="hidden" name="id" value={String(item.id)} /><button className="min-h-10 rounded-xl bg-emerald-600 px-3 text-sm font-bold text-white">Finalkan</button></form> : null}</div></div></div></article>)}</div> : <EmptyState icon={FileText} title="Belum ada dokumen" description="Buat draf surat atau dokumen sekolah pertama." />}</section></div></div>;
 }

@@ -1015,4 +1015,27 @@ with check (private.is_active_school_member(school_id));
 create policy "supervision_admin_delete" on public.supervision_records
 for delete to authenticated using (private.has_school_role(school_id, array['owner','admin']::public.school_role[]));
 
+-- Communication drafts stay private to their creator, with admin visibility for
+-- school governance. Replace bootstrap policies that used public helpers.
+drop policy if exists "communication_owner_select" on public.communication_drafts;
+drop policy if exists "communication_owner_insert" on public.communication_drafts;
+drop policy if exists "communication_owner_update" on public.communication_drafts;
+drop policy if exists "communication_owner_delete" on public.communication_drafts;
+create policy "communication_creator_select" on public.communication_drafts
+for select to authenticated using (
+  created_by = (select auth.uid())
+  or private.has_school_role(school_id, array['owner','admin']::public.school_role[])
+);
+create policy "communication_creator_insert" on public.communication_drafts
+for insert to authenticated with check (
+  created_by = (select auth.uid())
+  and private.is_active_school_member(school_id)
+);
+create policy "communication_creator_update" on public.communication_drafts
+for update to authenticated
+using (created_by = (select auth.uid()))
+with check (created_by = (select auth.uid()) and private.is_active_school_member(school_id));
+create policy "communication_creator_delete" on public.communication_drafts
+for delete to authenticated using (created_by = (select auth.uid()));
+
 commit;

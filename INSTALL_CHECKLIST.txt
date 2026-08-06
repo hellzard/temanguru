@@ -1,0 +1,28 @@
+TEMAN GURU v0.4 — CHECKLIST PEMASANGAN
+
+[ ] Ekstrak ZIP, jangan upload ZIP sebagai source
+[ ] Pasang Node.js 22
+[ ] Buat project Supabase baru
+[ ] Catat Project Ref, URL, dan publishable key
+[ ] Jalankan npm install
+[ ] Jalankan npx supabase@latest login
+[ ] Jalankan npx supabase@latest link --project-ref ...
+[ ] Jalankan npx supabase@latest db push --dry-run
+[ ] Jalankan npx supabase@latest db push
+[ ] Aktifkan Email provider
+[ ] Aktifkan signup
+[ ] Matikan Confirm Email agar daftar langsung masuk
+[ ] Ganti Reset Password template dengan {{ .Token }}
+[ ] Buat .env.local
+[ ] Jalankan npm run preflight
+[ ] Jalankan npm run dev dan tes mode lokal
+[ ] Upload isi folder ke GitHub
+[ ] Import repository ke Vercel
+[ ] Isi environment variables Vercel
+[ ] Deploy
+[ ] Atur Supabase Site URL dan Redirect URLs
+[ ] Tes tanpa login
+[ ] Tes daftar/login email+sandi
+[ ] Tes OTP lupa sandi
+[ ] Tes sinkron di browser/perangkat kedua
+[ ] Simpan backup JSON pertama

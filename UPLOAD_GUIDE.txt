@@ -1,0 +1,22 @@
+TEMAN GURU v0.4 — UPLOAD DAN DEPLOY CEPAT
+
+BACA DULU:
+- START_HERE.md
+- docs/INSTALL_STEP_BY_STEP.md
+- INSTALL_CHECKLIST.txt
+
+URUTAN AMAN:
+1. Ekstrak ZIP sampai terlihat folder "temanguru".
+2. Buka folder itu; package.json harus berada di dalamnya.
+3. Jalankan npm install di komputer.
+4. Buat project Supabase dan jalankan migration sesuai panduan.
+5. Atur Email provider, Confirm Email OFF, dan template Reset Password memakai {{ .Token }}.
+6. Buat .env.local dari .env.example dan uji npm run preflight serta npm run dev.
+7. Upload SELURUH ISI folder temanguru ke root repository GitHub.
+8. Jangan upload ZIP, .env.local, node_modules, .next, .vercel, atau supabase/.temp.
+9. Hubungkan repository GitHub ke Vercel.
+10. Isi environment variables Vercel dari .env.production.example.
+11. Deploy, lalu masukkan URL Vercel ke Supabase Authentication URL Configuration.
+12. Jalankan checklist tanpa login, backup, login, OTP, dan sinkronisasi dua perangkat.
+
+Jangan hapus deployment lama sebelum versi baru benar-benar lolos semua pengujian.
