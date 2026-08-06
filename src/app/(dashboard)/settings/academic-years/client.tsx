@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createAcademicYear, setActiveAcademicYear } from "./actions";
+import { createAcademicYear, activateAcademicYear } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2 } from "lucide-react";
@@ -26,7 +26,7 @@ export function AcademicYearList({ years }: { years: Record<string, unknown>[] }
                 </p>
               </div>
               {!year.is_active && (
-                <form action={async () => { await setActiveAcademicYear(year.id as string); }}>
+                <form action={async () => { await activateAcademicYear(year.id as string); }}>
                   <Button type="submit" variant="secondary" className="w-full sm:w-auto">
                     <CheckCircle2 className="mr-2" size={16} /> Aktifkan
                   </Button>
