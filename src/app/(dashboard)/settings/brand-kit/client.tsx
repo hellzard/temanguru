@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useRef, useState } from "react";
-import { updateBrandKit } from "./actions";
+import { saveBrandKit } from "./actions";
 import { toast } from "sonner";
 import { Paintbrush, Image as ImageIcon, Save, Loader2 } from "lucide-react";
 
@@ -29,11 +29,11 @@ export function BrandKitClient({ initialData, signedLogoUrl }: { initialData: Br
 
   const action = (formData: FormData) => {
     startTransition(async () => {
-      const res = await updateBrandKit(formData);
-      if (res.error) {
-        toast.error(res.error);
-      } else {
-        toast.success("Brand kit berhasil diperbarui!");
+      try {
+        await saveBrandKit(formData);
+      } catch (e: any) {
+        if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+        toast.error("Terjadi kesalahan.");
       }
     });
   };
