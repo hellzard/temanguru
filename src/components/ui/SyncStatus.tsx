@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CloudOff, RefreshCw } from "lucide-react";
-import { getPendingRecords, markRecordSyncing, removeRecord, markRecordError } from "@/lib/offline-db";
+import { getPendingRecords, updateOutboxRecord, removeOutboxRecord } from "@/lib/offline-db";
 import { saveClassRecord } from "@/app/(dashboard)/record/actions";
 
 export default function SyncStatus() {
@@ -48,7 +48,7 @@ export default function SyncStatus() {
       for (const record of records) {
         if (!record.id) continue;
         
-        await markRecordSyncing(record.id);
+        await updateOutboxRecord(record.id, { status: "syncing" });
         
         const fd = new FormData();
         fd.append("assignment_id", record.payload.assignment_id);
@@ -60,12 +60,15 @@ export default function SyncStatus() {
         fd.append("obstacle", record.payload.obstacle);
         fd.append("follow_up", record.payload.follow_up);
 
-        const result = await saveClassRecord(null, fd);
-        
-        if (result.error) {
-          await markRecordError(record.id, result.error);
-        } else {
-          await removeRecord(record.id);
+        try {
+          await saveClassRecord(fd);
+          await removeOutboxRecord(record.id);
+        } catch (e: any) {
+          if (e?.message?.includes("NEXT_REDIRECT")) {
+            await removeOutboxRecord(record.id);
+          } else {
+            await updateOutboxRecord(record.id, { status: "error", error_message: "Terjadi kesalahan sinkronisasi" });
+          }
         }
       }
     } finally {
